@@ -8,7 +8,7 @@
 
 **Tech Stack:** Node.js (v24 LTS), TypeScript 5.7+, `@modelcontextprotocol/sdk`, `better-sqlite3`, `zod`, `dotenv`, `vitest`.
 
-**Spec:** [docs/superpowers/specs/2026-09-08-blindwrite-mcp-design.md](file:///d:/COding/InternShip%20Work/E-STUDYPAL/LAUNCHPIT/BlindWrite_MCP/docs/superpowers/specs/2026-09-08-blindwrite-mcp-design.md)
+**Spec:** [docs/superpowers/specs/2026-09-08-blindwrite-mcp-design.md](../specs/2026-09-08-blindwrite-mcp-design.md)
 
 ## Global Constraints
 - Node.js LTS (v24), TypeScript with NodeNext module resolution.
