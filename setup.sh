@@ -26,8 +26,8 @@ echo "[+] Detected Node.js: $(node -v) (npm: $(npm -v))"
 echo ""
 
 # 2. Install dependencies
-echo "[*] Installing dependencies with npm install..."
-npm install
+echo "[*] Installing dependencies with npm install (using precompiled native binaries)..."
+npm install --ignore-scripts || npm install
 
 # 3. Build project
 echo "[*] Compiling TypeScript with npm run build..."

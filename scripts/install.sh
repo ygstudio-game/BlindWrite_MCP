@@ -53,8 +53,8 @@ fi
 cd "$TARGET_DIR"
 
 # 4. Install Dependencies & Build
-echo "[*] Installing NPM dependencies..."
-npm install
+echo "[*] Installing NPM dependencies (using precompiled native binaries)..."
+npm install --ignore-scripts || npm install
 
 echo "[*] Compiling TypeScript project..."
 npm run build

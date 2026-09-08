@@ -63,12 +63,16 @@ if %ERRORLEVEL% neq 0 (
 )
 
 :: 3. Install NPM dependencies
-echo [*] Installing dependencies with npm install...
-call npm install
+echo [*] Installing dependencies with npm install (using precompiled native binaries)...
+call npm install --ignore-scripts
 if %ERRORLEVEL% neq 0 (
-    echo [!] Failed to install npm dependencies.
-    pause
-    exit /b 1
+    echo [*] Retrying with standard npm install...
+    call npm install
+    if %ERRORLEVEL% neq 0 (
+        echo [!] Failed to install npm dependencies.
+        pause
+        exit /b 1
+    )
 )
 
 :: 4. Build TypeScript project
