@@ -47,7 +47,7 @@ if [ ! -f "$TARGET_DIR/package.json" ]; then
     mkdir -p "$TARGET_DIR"
     git clone "$REPO_URL" "$TARGET_DIR"
 else
-    echo "[+] BlindWrite MCP files detected in $TargetDir"
+    echo "[+] BlindWrite MCP files detected in $TARGET_DIR"
 fi
 
 cd "$TARGET_DIR"

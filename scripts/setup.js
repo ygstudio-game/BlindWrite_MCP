@@ -177,8 +177,9 @@ LOG_LEVEL=info
 
   console.log('\n👉 Next steps:');
   console.log('1. Completely restart Claude Desktop (Quit from tray/menu and relaunch).');
-  console.log('2. Look for the 🔨 icon in Claude Desktop chat.');
-  console.log('3. Ask: "Benchmark writing models for cold outreach emails!"\n');
+  console.log('2. Look for the 🔨 icon in Claude Desktop chat (11 tools available).');
+  console.log('3. Token-Saving Writing: "Help me write a cold email — outline the strategy and use writer_generate to draft it!"');
+  console.log('4. Blind Benchmarking: "Benchmark competing writing models for my sales pitch!"\n');
 
   if (rl) rl.close();
 }

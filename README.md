@@ -213,14 +213,29 @@ If you prefer to configure Claude Desktop manually instead of using `npm run set
 > - **macOS / Linux:** `"/Users/yourname/projects/BlindWrite_MCP/dist/index.js"`
 > - **Windows:** `"C:\\Users\\yourname\\projects\\BlindWrite_MCP\\dist\\index.js"` *(ensure backslashes are escaped with `\\`)*
 
-3. Restart Claude Desktop. You will see the hammer icon with 10 BlindWrite tools ready to use!
+3. Restart Claude Desktop. You will see the hammer icon with all 11 BlindWrite tools ready to use!
 
 ---
 
-## 7. Example Workflow in Claude Desktop
+## 7. Example Workflows in Claude Desktop
+
+### Workflow A: Direct Token-Saving Drafting (Daily Work)
 
 **You:**
-> *"Benchmark the best models for writing a cold outreach email to CTOs."*
+> *"Help me draft a 120-word cold outreach email to a VP of Sales about our developer platform. Outline the strategy and use writer_generate to draft it."*
+
+**Claude:**
+1. Briefly outlines the strategy, target persona, and hook in 2-3 bullets (saving Claude output tokens).
+2. Calls `writer_generate(category: "Emails", prompt: "...")`.
+3. OpenRouter generates the complete draft in ~1 second using your personal #1 model (or DeepSeek V3 for ~$0.0003).
+4. Claude presents the generated draft, reports the tokens saved and cost, and provides 1-2 sharp polish recommendations!
+
+---
+
+### Workflow B: Blind A/B Benchmark Duel (Style Discovery)
+
+**You:**
+> *"Benchmark the best models for writing an executive pitch email to CTOs."*
 
 **Claude:**
 1. Calls `benchmark_create_task` with category `"Emails"` and your prompt.
