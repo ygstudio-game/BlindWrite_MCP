@@ -133,6 +133,29 @@ curl -fsSL https://raw.githubusercontent.com/ygstudio-game/BlindWrite_MCP/main/s
 ```
 *(Tip: Or headless: `OPENROUTER_API_KEY="sk-or-v1-..." curl -fsSL https://raw.githubusercontent.com/ygstudio-game/BlindWrite_MCP/main/scripts/install.sh | bash`)*
 
+#### Manual Skill Installation (If using 1-Line Remote Installer):
+While the remote installer automatically registers the MCP server in `claude_desktop_config.json`, you can also manually install or upload the Writing Orchestrator Skill to your Claude environment:
+
+1. **Claude Desktop App (Account Upload via UI)**:
+   - Download the pre-packaged ZIP archive: [**`writing-orchestrator.zip`**](https://github.com/ygstudio-game/BlindWrite_MCP/raw/main/skills/writing-orchestrator.zip) (or grab it from your installation folder at `%LOCALAPPDATA%\BlindWrite_MCP\skills\writing-orchestrator.zip` on Windows, or `~/.blindwrite-mcp/skills/writing-orchestrator.zip` on macOS/Linux).
+   - In Claude Desktop, open **Customize** > **Skills** from the sidebar.
+   - Click the **`+`** button and choose **"Upload a skill"**, then select `writing-orchestrator.zip`.
+   - Ensure the skill toggle is switched **ON** (synced directly to your Anthropic account in the cloud).
+
+2. **Claude Code / Terminal Integration (Local Filesystem)**:
+   - **Windows (PowerShell)**:
+     ```powershell
+     New-Item -ItemType Directory -Force -Path "$HOME\.claude\skills\writing-orchestrator"
+     Invoke-WebRequest -Uri "https://raw.githubusercontent.com/ygstudio-game/BlindWrite_MCP/main/skills/writing-orchestrator/SKILL.md" -OutFile "$HOME\.claude\skills\writing-orchestrator\SKILL.md"
+     ```
+   - **macOS / Linux (Bash)**:
+     ```bash
+     mkdir -p ~/.claude/skills/writing-orchestrator && curl -fsSL https://raw.githubusercontent.com/ygstudio-game/BlindWrite_MCP/main/skills/writing-orchestrator/SKILL.md -o ~/.claude/skills/writing-orchestrator/SKILL.md
+     ```
+
+3. **Zero-Setup Native MCP Prompt**:
+   - The installer already configures Claude Desktop to expose the `/writing-orchestrator` MCP Prompt natively. You can type `/writing-orchestrator` directly in any chat without copying any files!
+
 ---
 
 ### Option B: Local 1-Click Setup (If already cloned)
@@ -216,36 +239,88 @@ If you prefer to configure Claude Desktop manually instead of using `npm run set
 
 3. Restart Claude Desktop. You will see the hammer icon with all 11 BlindWrite tools ready to use!
 4. **Writing Orchestrator Skill & Prompt:**
-   - The setup script auto-installs the skill into Claude Desktop's skill directories (`%APPDATA%\Claude\skills\writing-orchestrator\SKILL.md` and `~/.claude/skills/writing-orchestrator/SKILL.md`).
-   - The server also exposes a native MCP prompt `writing-orchestrator` accessible right from Claude Desktop!
-   - You can also paste [`CLAUDE_PROMPT.md`](./CLAUDE_PROMPT.md) into any Claude Desktop Project Custom Instructions.
+   - **Skill Source**: Read the complete skill definition in [`skills/writing-orchestrator/SKILL.md`](https://github.com/ygstudio-game/BlindWrite_MCP/blob/main/skills/writing-orchestrator/SKILL.md).
+   - **1-Click Upload ZIP**: Download the pre-packaged [**`writing-orchestrator.zip`**](https://github.com/ygstudio-game/BlindWrite_MCP/raw/main/skills/writing-orchestrator.zip) and upload it directly in Claude Desktop (**Customize** > **Skills** > **`+`** > **Upload a skill**).
+   - **Auto-Installed Local Folders**: The setup script auto-populates `%APPDATA%\Claude\skills\writing-orchestrator\SKILL.md`, `~/.claude/skills/writing-orchestrator/SKILL.md`, and project-level `.claude/skills/`.
+   - **Native MCP Prompt**: The server natively registers the `/writing-orchestrator` prompt accessible directly inside Claude Desktop chat without uploading any files!
+   - **Project Instructions**: For Claude Desktop Projects, copy [`CLAUDE_PROMPT.md`](https://github.com/ygstudio-game/BlindWrite_MCP/blob/main/CLAUDE_PROMPT.md) into your Project's *Custom Instructions*.
+   - **How to invoke in chat**: Simply tell Claude:
+     > *"Use the writing-orchestrator skill to outline our strategy and draft..."*  
+     or select the `/writing-orchestrator` prompt template from the chat input menu.
 
 ---
 
 ## 7. Example Workflows in Claude Desktop
 
-### Workflow A: Direct Token-Saving Drafting (Daily Work)
+### Workflow A: High-Conversion B2B Cold Outreach Email
+**Goal**: Craft a personalized, high-response email while saving Claude output tokens.
 
 **You:**
-> *"Help me draft a 120-word cold outreach email to a VP of Sales about our developer platform. Outline the strategy and use writer_generate to draft it."*
+> *"Help me draft a 120-word cold outreach email to a VP of Sales about our developer platform. Use the writing-orchestrator skill to outline the strategy first and use writer_generate to draft it."*
 
-**Claude:**
-1. Briefly outlines the strategy, target persona, and hook in 2-3 bullets (saving Claude output tokens).
-2. Calls `writer_generate(category: "Emails", prompt: "...")`.
-3. OpenRouter generates the complete draft in ~1 second using your personal #1 model (or DeepSeek V3 for ~$0.0003).
-4. Claude presents the generated draft, reports the tokens saved and cost, and provides 1-2 sharp polish recommendations!
+**Claude (Thinking & Strategy Brain):**
+1. Analyzes the VP of Sales persona (time-poor, quota-focused, values proven ROI).
+2. Formulates the prompt blueprint (Hook: shortening deal cycles by 40%; Body: 2 concrete metrics; CTA: 10-minute intro).
+3. **Delegates drafting**: Calls `writer_generate(category: "Emails", prompt: "...", max_tokens: 400)`.
+4. OpenRouter generates the draft in ~800ms using your personal #1 model (e.g. DeepSeek V3 for $0.0003).
+5. Claude presents the generated email, reports token metrics (saved ~300 Claude output tokens), and suggests two high-impact subject lines.
 
 ---
 
-### Workflow B: Blind A/B Benchmark Duel (Style Discovery)
+### Workflow B: Technical Architecture RFC / Migration Spec
+**Goal**: Generate a comprehensive 1,500-word engineering RFC with deep strategic framing.
+
+**You:**
+> *"We need an RFC for migrating our monolithic PostgreSQL database to a globally distributed database with zero downtime. Use the writing-orchestrator skill to structure the technical plan and delegate the drafting."*
+
+**Claude (Thinking & Strategy Brain):**
+1. Produces an architectural breakdown:
+   - Problem statement & current bottlenecks
+   - Dual-write replication architecture & cutover sequence
+   - Failure modes, rollback triggers, and data validation
+2. Calls `writer_generate(category: "Technical Writing", prompt: "Write section 2 and 3 covering dual-write synchronization and consistency models...", max_tokens: 2500)`.
+3. OpenRouter streams the extensive technical draft in seconds.
+4. Claude critically audits the draft, flags edge cases in network partition scenarios, and polishes the summary.
+
+---
+
+### Workflow C: High-Converting SaaS Landing Page Copy
+**Goal**: Draft hero headlines, subheads, and 3 value pillars.
+
+**You:**
+> *"Write landing page hero section copy and 3 core value pillars for an AI agent observability tool. Use the writing-orchestrator skill."*
+
+**Claude (Thinking & Strategy Brain):**
+1. Outlines the positioning: Anti-hype, focused on debugging production hallucinations and latency spikes.
+2. Calls `writer_generate(category: "Marketing Copy", prompt: "Craft punchy H1 headline, 2-sentence subhead, and 3 customer-outcome pillars with proof points...", max_tokens: 800)`.
+3. Displays the full landing page copy with clear visual hierarchy, ready for deployment.
+
+---
+
+### Workflow D: Thought Leadership / Technical Blog Post
+**Goal**: Write an engaging 800-word essay with a contrarian engineering thesis.
+
+**You:**
+> *"Draft an engineering blog post arguing why autonomous agent swarms will replace traditional CI/CD pipelines by 2027. Use the writing-orchestrator skill."*
+
+**Claude (Thinking & Strategy Brain):**
+1. Establishes the contrarian hook, 3 narrative beats, and concrete code pipeline analogies.
+2. Calls `writer_generate(category: "Blog Posts", prompt: "...", max_tokens: 1500)`.
+3. OpenRouter drafts the essay using your preferred style profile.
+4. Claude reviews flow, rhythm, and tone, delivering an impactful publication-ready draft.
+
+---
+
+### Workflow E: Blind A/B Benchmark Duel (Style Discovery)
+**Goal**: Objectively determine which frontier model writes best for your personal voice without brand bias.
 
 **You:**
 > *"Benchmark the best models for writing an executive pitch email to CTOs."*
 
 **Claude:**
-1. Calls `benchmark_create_task` with category `"Emails"` and your prompt.
-2. Calls `benchmark_generate_outputs` to query competing frontier models via OpenRouter simultaneously.
-3. Calls `benchmark_start_duel` and displays:
+1. Calls `benchmark_create_task(title: "CTO Pitch", category: "Emails", prompt: "...")`.
+2. Calls `benchmark_generate_outputs(taskId)` to query competing models in parallel via OpenRouter.
+3. Calls `benchmark_start_duel(taskId)` and displays anonymous options:
    > **Response A:**  
    > *[Anonymous output]*  
    >  
@@ -253,13 +328,13 @@ If you prefer to configure Claude Desktop manually instead of using `npm run set
    > *[Anonymous output]*  
    >  
    > *Which response is more compelling, A or B?*
-4. You reply: *"Response A is much punchier and has clearer ROI bullets."*
-5. Claude calls `benchmark_submit_vote` and presents the next matchup.
-6. Once satisfied, you say: *"Show me the results!"*
-7. Claude calls `benchmark_get_results(reveal: true)` and reveals:
-   - Response A was generated by **Claude 3.5 Sonnet** (Latency: 780ms, Cost: $0.0012).
-   - Response B was generated by **GPT-4o** (Latency: 910ms, Cost: $0.0010).
-8. Claude calls `benchmark_get_leaderboard` and `benchmark_analyze_preferences` to present your personalized writing style profile!
+4. You vote: *"Response A is punchier and highlights developer productivity much better."*
+5. Claude calls `benchmark_submit_vote(battleId, choice: "A")`.
+6. When satisfied, you ask: *"Reveal results!"*
+7. Claude calls `benchmark_get_results(taskId, reveal: true)`:
+   - Response A was **Claude 3.5 Sonnet** (Score: 1240, Latency: 780ms)
+   - Response B was **GPT-4o** (Score: 1195, Latency: 910ms)
+8. Claude calls `benchmark_get_leaderboard` and `benchmark_analyze_preferences` to update your personal ranking!
 
 ---
 
