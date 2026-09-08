@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # BlindWrite MCP — macOS / Linux 1-Line Remote Installer & Auto-Configurator
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/ygstudio-game/BlindWrite_MCP/master/scripts/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/ygstudio-game/BlindWrite_MCP/main/scripts/install.sh | bash
 # Or with API key:
-#   OPENROUTER_API_KEY="sk-or-v1-..." curl -fsSL https://raw.githubusercontent.com/ygstudio-game/BlindWrite_MCP/master/scripts/install.sh | bash
+#   OPENROUTER_API_KEY="sk-or-v1-..." curl -fsSL https://raw.githubusercontent.com/ygstudio-game/BlindWrite_MCP/main/scripts/install.sh | bash
 
 set -e
 

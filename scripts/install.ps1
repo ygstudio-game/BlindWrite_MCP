@@ -1,8 +1,8 @@
 # BlindWrite MCP — Windows 1-Line Remote Installer & Auto-Configurator
 # Usage:
-#   irm https://raw.githubusercontent.com/ygstudio-game/BlindWrite_MCP/master/scripts/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/ygstudio-game/BlindWrite_MCP/main/scripts/install.ps1 | iex
 # Or with API key:
-#   $env:OPENROUTER_API_KEY="sk-or-v1-..."; irm https://raw.githubusercontent.com/ygstudio-game/BlindWrite_MCP/master/scripts/install.ps1 | iex
+#   $env:OPENROUTER_API_KEY="sk-or-v1-..."; irm https://raw.githubusercontent.com/ygstudio-game/BlindWrite_MCP/main/scripts/install.ps1 | iex
 
 $ErrorActionPreference = "Stop"
 

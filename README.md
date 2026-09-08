@@ -124,15 +124,15 @@ Run a single command in your terminal. It will automatically check/install Node.
 
 #### Windows (PowerShell):
 ```powershell
-irm https://raw.githubusercontent.com/ygstudio-game/BlindWrite_MCP/master/scripts/install.ps1 | iex
+irm https://raw.githubusercontent.com/ygstudio-game/BlindWrite_MCP/main/scripts/install.ps1 | iex
 ```
-*(Tip: You can pre-supply your key to make it 100% headless: `$env:OPENROUTER_API_KEY="sk-or-v1-..."; irm https://raw.githubusercontent.com/ygstudio-game/BlindWrite_MCP/master/scripts/install.ps1 | iex`)*
+*(Tip: You can pre-supply your key to make it 100% headless: `$env:OPENROUTER_API_KEY="sk-or-v1-..."; irm https://raw.githubusercontent.com/ygstudio-game/BlindWrite_MCP/main/scripts/install.ps1 | iex`)*
 
 #### macOS & Linux (Terminal):
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ygstudio-game/BlindWrite_MCP/master/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ygstudio-game/BlindWrite_MCP/main/scripts/install.sh | bash
 ```
-*(Tip: Or headless: `OPENROUTER_API_KEY="sk-or-v1-..." curl -fsSL https://raw.githubusercontent.com/ygstudio-game/BlindWrite_MCP/master/scripts/install.sh | bash`)*
+*(Tip: Or headless: `OPENROUTER_API_KEY="sk-or-v1-..." curl -fsSL https://raw.githubusercontent.com/ygstudio-game/BlindWrite_MCP/main/scripts/install.sh | bash`)*
 
 ---
 
