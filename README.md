@@ -119,7 +119,7 @@ Writers, marketers, and knowledge workers face two major challenges when using L
 
 ### Option A: 1-Line Autonomous Remote Installer (Fastest — No Git Clone Required)
 
-Run a single command in your terminal. It will automatically check/install Node.js & Git, clone into your user directory, build the project, prompt for your OpenRouter key, and configure Claude Desktop:
+Run a single command in your terminal. It will automatically check/install Node.js & Git, clone into your user directory, build the project, prompt for your OpenRouter key, auto-install the Writing Orchestrator Skill, and configure Claude Desktop:
 
 #### Windows (PowerShell):
 ```powershell
@@ -147,6 +147,7 @@ setup.bat
 * Compiles TypeScript (`npm run build`).
 * Prompts for your OpenRouter API key.
 * **Automatically merges** the configuration into `%APPDATA%\Claude\claude_desktop_config.json` (with automatic backup).
+* **Auto-installs the Writing Orchestrator Skill** into `~/.claude/skills/writing-orchestrator` and agent environments.
 
 #### On macOS / Linux:
 ```bash

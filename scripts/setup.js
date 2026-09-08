@@ -164,9 +164,37 @@ LOG_LEVEL=info
       currentConfig.mcpServers.blindwrite = blindwriteConfig;
 
       fs.writeFileSync(claudeConfigPath, JSON.stringify(currentConfig, null, 2), 'utf8');
-      console.log(`\n🎉 SUCCESS! BlindWrite MCP was added to Claude Desktop configuration.`);
+      console.log(`\n🎉 SUCCESS! BlindWrite MCP was added to Claude Desktop configuration.\n`);
     } catch (err) {
       console.error(`❌ Failed to automatically write Claude Desktop config: ${String(err)}`);
+    }
+  }
+
+  // 5. Automatically install Claude & Agent Skill
+  const skillSource = path.join(projectRoot, 'skills', 'writing-orchestrator', 'SKILL.md');
+  if (fs.existsSync(skillSource)) {
+    const home = os.homedir();
+    const targetSkillDirs = [
+      path.join(home, '.claude', 'skills', 'writing-orchestrator'),
+      path.join(home, '.gemini', 'config', 'skills', 'writing-orchestrator'),
+    ];
+
+    let installedCount = 0;
+    for (const dir of targetSkillDirs) {
+      try {
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+        }
+        const targetFile = path.join(dir, 'SKILL.md');
+        fs.copyFileSync(skillSource, targetFile);
+        console.log(`📋 Auto-installed skill: ${targetFile}`);
+        installedCount++;
+      } catch {
+        // Non-fatal if folder not writable
+      }
+    }
+    if (installedCount > 0) {
+      console.log('✅ writing-orchestrator skill installed globally for Claude and AI agents!\n');
     }
   }
 
