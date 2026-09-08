@@ -276,4 +276,4 @@ npm run test:watch
 
 ## 10. License
 
-MIT © BlindWrite Contributors.
+MIT © Yadnyesh Borole.
