@@ -102,12 +102,12 @@ Anthropic handles skills differently depending on which interface you use:
 ### Interface 1: Claude Desktop App (Chat / Cowork)
 In the Claude Desktop App, custom skills are synced directly to your Anthropic cloud account rather than read from a local folder. You have three instant options:
 
-- **Option A: Upload Skill (1 Click via UI)**:
+- **Option A: Upload Skill (1 Click via UI — ZIP or Direct MD)**:
   1. In Claude Desktop, go to **Customize** > **Skills** in the sidebar.
   2. Click the **`+`** button and select **"Upload a skill"**.
-  3. Select the pre-packaged ZIP archive:
-     - Local path: [`skills/writing-orchestrator.zip`](../skills/writing-orchestrator.zip)
-     - Direct download: [**`writing-orchestrator.zip`**](https://github.com/ygstudio-game/BlindWrite_MCP/raw/main/skills/writing-orchestrator.zip)
+  3. You can upload either:
+     - **Option 1: ZIP Archive**: Select [`skills/writing-orchestrator.zip`](../skills/writing-orchestrator.zip) (or download [**`writing-orchestrator.zip`**](https://github.com/ygstudio-game/BlindWrite_MCP/raw/main/skills/writing-orchestrator.zip)). *Note: If you manually zip the folder on Windows, right-click the `writing-orchestrator` folder → Compress to ZIP file (or use 7-Zip).*
+     - **Option 2: Direct `.md` file (No zip needed!)**: Directly select [`skills/writing-orchestrator/SKILL.md`](../skills/writing-orchestrator/SKILL.md). Claude Desktop natively accepts single `.md` skill files.
   4. Ensure the `writing-orchestrator` skill is toggled **ON**.
   5. The full skill documentation is accessible in [`skills/writing-orchestrator/SKILL.md`](../skills/writing-orchestrator/SKILL.md).
 

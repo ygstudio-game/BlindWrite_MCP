@@ -4,6 +4,7 @@ import path from 'path';
 import os from 'os';
 import readline from 'readline';
 import { execSync } from 'child_process';
+import zlib from 'zlib';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -174,16 +175,99 @@ LOG_LEVEL=info
   const skillSource = path.join(skillDir, 'SKILL.md');
   const zipPath = path.join(projectRoot, 'skills', 'writing-orchestrator.zip');
 
+  function createStandardZipArchive(files, targetZip) {
+    const localChunks = [];
+    const centralChunks = [];
+    let offset = 0;
+
+    for (const file of files) {
+      // Enforce strict POSIX forward-slashes for zip entries (eliminates invalid backslashes on Windows)
+      const normalizedName = file.name.replace(/\\/g, '/');
+      const nameBuf = Buffer.from(normalizedName, 'utf8');
+      const data = Buffer.isBuffer(file.content) ? file.content : Buffer.from(file.content, 'utf8');
+      const deflated = zlib.deflateRawSync(data);
+      const crc = zlib.crc32(data);
+
+      // Local file header (30 bytes + name length)
+      const loc = Buffer.alloc(30 + nameBuf.length);
+      loc.writeUInt32LE(0x04034b50, 0); // Local header signature
+      loc.writeUInt16LE(20, 4);         // Version needed: 2.0
+      loc.writeUInt16LE(0x0800, 6);     // Flags: UTF-8 filename
+      loc.writeUInt16LE(8, 8);          // Compression: DEFLATE
+      loc.writeUInt16LE(0, 10);         // Time
+      loc.writeUInt16LE(0, 12);         // Date
+      loc.writeUInt32LE(crc, 14);       // CRC-32
+      loc.writeUInt32LE(deflated.length, 18); // Compressed size
+      loc.writeUInt32LE(data.length, 22);     // Uncompressed size
+      loc.writeUInt16LE(nameBuf.length, 26);  // Name length
+      loc.writeUInt16LE(0, 28);         // Extra field length
+      nameBuf.copy(loc, 30);
+
+      // Central directory header (46 bytes + name length)
+      const cen = Buffer.alloc(46 + nameBuf.length);
+      cen.writeUInt32LE(0x02014b50, 0); // Central file header signature
+      cen.writeUInt16LE(0x0314, 4);     // Version made by: UNIX (0x03) / 2.0 (0x14)
+      cen.writeUInt16LE(20, 6);         // Version needed: 2.0
+      cen.writeUInt16LE(0x0800, 8);     // Flags: UTF-8
+      cen.writeUInt16LE(8, 10);         // Compression: DEFLATE
+      cen.writeUInt16LE(0, 12);         // Time
+      cen.writeUInt16LE(0, 14);         // Date
+      cen.writeUInt32LE(crc, 16);       // CRC-32
+      cen.writeUInt32LE(deflated.length, 20); // Compressed size
+      cen.writeUInt32LE(data.length, 24);     // Uncompressed size
+      cen.writeUInt16LE(nameBuf.length, 28);  // Name length
+      cen.writeUInt16LE(0, 30);         // Extra field length
+      cen.writeUInt16LE(0, 32);         // Comment length
+      cen.writeUInt16LE(0, 34);         // Disk number start
+      cen.writeUInt16LE(0, 36);         // Internal file attributes
+      cen.writeUInt32LE(0x81a40000, 38); // External file attributes (UNIX regular file 0644)
+      cen.writeUInt32LE(offset, 42);    // Relative offset of local header
+      nameBuf.copy(cen, 46);
+
+      localChunks.push(loc, deflated);
+      centralChunks.push(cen);
+      offset += loc.length + deflated.length;
+    }
+
+    const cenBuf = Buffer.concat(centralChunks);
+    const eocd = Buffer.alloc(22);
+    eocd.writeUInt32LE(0x06054b50, 0); // EOCD signature
+    eocd.writeUInt16LE(0, 4);          // Disk number
+    eocd.writeUInt16LE(0, 6);          // Start disk
+    eocd.writeUInt16LE(files.length, 8);  // Entries on disk
+    eocd.writeUInt16LE(files.length, 10); // Total entries
+    eocd.writeUInt32LE(cenBuf.length, 12); // Size of central directory
+    eocd.writeUInt32LE(offset, 16);        // Offset of central directory
+    eocd.writeUInt16LE(0, 20);         // Comment length
+
+    fs.writeFileSync(targetZip, Buffer.concat([...localChunks, cenBuf, eocd]));
+    return fs.existsSync(targetZip);
+  }
+
   function packageSkillZip(sourceDir, targetZip) {
     try {
-      if (process.platform === 'win32') {
-        execSync(`powershell -NoProfile -Command "Compress-Archive -Path '${sourceDir}' -DestinationPath '${targetZip}' -Force"`, { stdio: 'ignore' });
-      } else {
-        const parent = path.dirname(sourceDir);
-        const base = path.basename(sourceDir);
-        execSync(`cd "${parent}" && zip -r -q "${targetZip}" "${base}"`, { stdio: 'ignore' });
+      const skillBaseName = path.basename(sourceDir);
+      const filesToZip = [];
+
+      function walk(currentDir, relativePrefix) {
+        const items = fs.readdirSync(currentDir);
+        for (const item of items) {
+          const fullPath = path.join(currentDir, item);
+          const relPath = `${relativePrefix}/${item}`.replace(/\\/g, '/');
+          const stat = fs.statSync(fullPath);
+          if (stat.isDirectory()) {
+            walk(fullPath, relPath);
+          } else if (stat.isFile()) {
+            filesToZip.push({
+              name: relPath,
+              content: fs.readFileSync(fullPath),
+            });
+          }
+        }
       }
-      return fs.existsSync(targetZip);
+
+      walk(sourceDir, skillBaseName);
+      return createStandardZipArchive(filesToZip, targetZip);
     } catch {
       return false;
     }
@@ -240,7 +324,9 @@ LOG_LEVEL=info
   console.log('3. Three ways to use the Writing Orchestrator:');
   console.log('   • Native MCP Prompt (Easiest): Type /writing-orchestrator in Claude Desktop chat.');
   console.log('   • Claude Account Skill: In Claude Desktop, go to Customize > Skills > "+" > "Upload a skill",');
-  console.log(`     and select: ${zipPath}`);
+  console.log('     and select either:');
+  console.log(`       1. ZIP Archive: ${zipPath} (or manually zip the skills/writing-orchestrator folder)`);
+  console.log(`       2. Direct .md file: ${skillSource} (no zip needed!)`);
   console.log('   • Project Custom Instructions: Copy CLAUDE_PROMPT.md into your Claude Desktop Project.');
   console.log('4. Token-Saving Writing: "Help me write a cold email — outline the strategy and use writer_generate to draft it!"');
   console.log('5. Blind Benchmarking: "Benchmark competing writing models for my sales pitch!"\n');

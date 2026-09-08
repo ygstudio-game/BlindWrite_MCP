@@ -136,10 +136,12 @@ curl -fsSL https://raw.githubusercontent.com/ygstudio-game/BlindWrite_MCP/main/s
 #### Manual Skill Installation (If using 1-Line Remote Installer):
 While the remote installer automatically registers the MCP server in `claude_desktop_config.json`, you can also manually install or upload the Writing Orchestrator Skill to your Claude environment:
 
-1. **Claude Desktop App (Account Upload via UI)**:
-   - Download the pre-packaged ZIP archive: [**`writing-orchestrator.zip`**](https://github.com/ygstudio-game/BlindWrite_MCP/raw/main/skills/writing-orchestrator.zip) (or grab it from your installation folder at `%LOCALAPPDATA%\BlindWrite_MCP\skills\writing-orchestrator.zip` on Windows, or `~/.blindwrite-mcp/skills/writing-orchestrator.zip` on macOS/Linux).
+1. **Claude Desktop App (Account Upload via UI — ZIP or Direct MD)**:
    - In Claude Desktop, open **Customize** > **Skills** from the sidebar.
-   - Click the **`+`** button and choose **"Upload a skill"**, then select `writing-orchestrator.zip`.
+   - Click the **`+`** button and choose **"Upload a skill"**.
+   - You can upload either:
+     - **ZIP Archive**: Select [`writing-orchestrator.zip`](https://github.com/ygstudio-game/BlindWrite_MCP/raw/main/skills/writing-orchestrator.zip) (located at `%LOCALAPPDATA%\BlindWrite_MCP\skills\writing-orchestrator.zip` on Windows, or `~/.blindwrite-mcp/skills/writing-orchestrator.zip` on macOS/Linux). *If you manually zip the folder on Windows, right-click `writing-orchestrator` folder → Compress to ZIP file (or use 7-Zip).*
+     - **Direct `.md` File (No ZIP needed!)**: Directly select [`SKILL.md`](https://github.com/ygstudio-game/BlindWrite_MCP/blob/main/skills/writing-orchestrator/SKILL.md) from your `skills/writing-orchestrator/SKILL.md` folder.
    - Ensure the skill toggle is switched **ON** (synced directly to your Anthropic account in the cloud).
 
 2. **Claude Code / Terminal Integration (Local Filesystem)**:
@@ -240,7 +242,8 @@ If you prefer to configure Claude Desktop manually instead of using `npm run set
 3. Restart Claude Desktop. You will see the hammer icon with all 11 BlindWrite tools ready to use!
 4. **Writing Orchestrator Skill & Prompt:**
    - **Skill Source**: Read the complete skill definition in [`skills/writing-orchestrator/SKILL.md`](https://github.com/ygstudio-game/BlindWrite_MCP/blob/main/skills/writing-orchestrator/SKILL.md).
-   - **1-Click Upload ZIP**: Download the pre-packaged [**`writing-orchestrator.zip`**](https://github.com/ygstudio-game/BlindWrite_MCP/raw/main/skills/writing-orchestrator.zip) and upload it directly in Claude Desktop (**Customize** > **Skills** > **`+`** > **Upload a skill**).
+   - **Upload to Claude Desktop**: In Claude Desktop (**Customize** > **Skills** > **`+`** > **Upload a skill**), upload either [**`writing-orchestrator.zip`**](https://github.com/ygstudio-game/BlindWrite_MCP/raw/main/skills/writing-orchestrator.zip) or select **`SKILL.md`** directly (no zip required).
+   - **Manual ZIP Creation**: If manually zipping the folder on Windows, right-click `writing-orchestrator` folder → *Compress to ZIP file* (or use 7-Zip).
    - **Auto-Installed Local Folders**: The setup script auto-populates `%APPDATA%\Claude\skills\writing-orchestrator\SKILL.md`, `~/.claude/skills/writing-orchestrator/SKILL.md`, and project-level `.claude/skills/`.
    - **Native MCP Prompt**: The server natively registers the `/writing-orchestrator` prompt accessible directly inside Claude Desktop chat without uploading any files!
    - **Project Instructions**: For Claude Desktop Projects, copy [`CLAUDE_PROMPT.md`](https://github.com/ygstudio-game/BlindWrite_MCP/blob/main/CLAUDE_PROMPT.md) into your Project's *Custom Instructions*.
