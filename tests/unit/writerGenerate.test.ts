@@ -99,4 +99,51 @@ describe('WriterGenerate and directWrite', () => {
     expect(result.modelId).toBe('claude-3-5-sonnet');
     expect(result.selectionReason).toContain('Ranked #1 on your personal leaderboard');
   });
+
+  it('appends self-critique instructions when includeCritique is true', async () => {
+    const spy = vi.spyOn(service.openRouterService, 'generateOutput').mockResolvedValue({
+      modelId: 'deepseek-v3',
+      outputText: 'Draft with self-critique block at the end.',
+      promptTokens: 50,
+      completionTokens: 100,
+      totalTokens: 150,
+      latencyMs: 500,
+      estimatedCost: 0.00003,
+    });
+
+    const result = await service.directWrite({
+      prompt: 'Write an apology email to a customer.',
+      includeCritique: true,
+      exportFile: false,
+    });
+
+    expect(spy).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.stringContaining('[SELF-EVALUATION]'),
+      expect.anything()
+    );
+    expect(result.text).toContain('Draft with self-critique');
+  });
+
+  it('exports draft to local data/drafts/ directory by default', async () => {
+    vi.spyOn(service.openRouterService, 'generateOutput').mockResolvedValue({
+      modelId: 'deepseek-v3',
+      outputText: 'Draft meant to be saved locally.',
+      promptTokens: 40,
+      completionTokens: 90,
+      totalTokens: 130,
+      latencyMs: 400,
+      estimatedCost: 0.000025,
+    });
+
+    const result = await service.directWrite({
+      prompt: 'Draft an engineering update.',
+      category: 'Technical Writing',
+      exportFile: true,
+    });
+
+    expect(result.savedToFile).toBeDefined();
+    expect(result.savedToFile).toContain('technical-writing');
+  });
 });
+

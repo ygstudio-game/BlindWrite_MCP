@@ -142,7 +142,7 @@ For CLI users, personal global and project-scoped skills are read from local fil
 
 **Example 1: High-Converting B2B Cold Outreach Email**
 > *"Help me draft a 120-word cold outreach email to a VP of Sales about our developer platform. Use the writing-orchestrator skill to outline the strategy first and call writer_generate to draft it."*
-- **What happens**: Claude outlines the value hook, calls `writer_generate(category: "Emails")` via OpenRouter (takes ~0.8s, costs $0.0003), saves ~300 Claude output tokens, and recommends 2 subject lines.
+- **What happens**: Claude outlines the value hook, calls `writer_generate(category: "Emails")` via OpenRouter (takes ~0.8s, costs $0.0003), saves ~300 Claude output tokens, auto-saves to `data/drafts/`, and delivers directly to user without burning extra tokens on unprompted critique.
 
 **Example 2: Technical Architecture RFC / Migration Spec**
 > *"We need a technical RFC for migrating our monolithic PostgreSQL database to a globally distributed database with zero downtime. Use the writing-orchestrator skill to structure the technical plan and delegate the drafting."*

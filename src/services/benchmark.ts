@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import type Database from 'better-sqlite3';
 import { TaskRepository, TaskRecord, CreateTaskParams } from '../db/repositories/taskRepo.js';
 import { ModelRepository, ModelRecord } from '../db/repositories/modelRepo.js';
@@ -674,6 +676,8 @@ export class BenchmarkService {
     systemPrompt?: string;
     category?: string;
     modelId?: string;
+    includeCritique?: boolean;
+    exportFile?: boolean;
     temperature?: number;
     maxTokens?: number;
     userId?: string;
@@ -687,6 +691,7 @@ export class BenchmarkService {
     tokensPrompt: number;
     tokensCompletion: number;
     selectionReason: string;
+    savedToFile?: string;
   }> {
     let targetModelId = params.modelId;
     let selectionReason = 'Explicitly specified by user/Claude';
@@ -768,15 +773,52 @@ export class BenchmarkService {
 
     logger.info(`Direct writing delegation triggered via model: ${modelRecord.id} (${selectionReason})`);
 
+    let finalPrompt = params.prompt;
+    if (params.includeCritique) {
+      finalPrompt +=
+        '\n\n---\n[SELF-EVALUATION]\nPlease append a concise 3-bullet evaluation directly below the draft:\n• Core strengths of this draft\n• 1 Potential weak spot or assumption\n• 1 Alternative angle/hook you would test next';
+    }
+
     const result = await this.openRouterService.generateOutput(
       modelRecord,
-      params.prompt,
+      finalPrompt,
       {
         systemPrompt: params.systemPrompt,
         temperature: params.temperature ?? 0.7,
         maxTokens: params.maxTokens,
       }
     );
+
+    let savedToFile: string | undefined;
+    if (params.exportFile !== false) {
+      try {
+        const draftsDir = path.resolve(process.cwd(), 'data', 'drafts');
+        if (!fs.existsSync(draftsDir)) {
+          fs.mkdirSync(draftsDir, { recursive: true });
+        }
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const catSlug = (params.category || 'draft').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const fileName = `${catSlug}-${timestamp}.md`;
+        const filePath = path.join(draftsDir, fileName);
+
+        const headerMeta = [
+          `# Draft: ${params.category || 'Generated Writing'}`,
+          `Generated: ${new Date().toISOString()}`,
+          `Model: ${modelRecord.display_name} (${modelRecord.id})`,
+          `Selection Reason: ${selectionReason}`,
+          `Tokens: ${result.completionTokens} | Cost: $${result.estimatedCost.toFixed(6)} | Latency: ${result.latencyMs}ms`,
+          '',
+          '---',
+          '',
+          result.outputText,
+        ].join('\n');
+
+        fs.writeFileSync(filePath, headerMeta, 'utf8');
+        savedToFile = filePath;
+      } catch (err) {
+        logger.warn(`Failed to export draft file: ${err}`);
+      }
+    }
 
     return {
       text: result.outputText,
@@ -788,6 +830,7 @@ export class BenchmarkService {
       tokensPrompt: result.promptTokens,
       tokensCompletion: result.completionTokens,
       selectionReason,
+      savedToFile,
     };
   }
 }

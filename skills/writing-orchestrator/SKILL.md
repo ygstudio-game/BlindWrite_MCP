@@ -22,26 +22,28 @@ Use this skill whenever:
 
 ---
 
-## The 3-Step Orchestration Loop
+## The 3-Step Orchestration Loop (Zero Token Waste) ⚡
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ 1. THINK & OUTLINE (Claude)                                 │
+│ 1. THINK & OUTLINE (Claude — 30-50 tokens)                  │
 │ - Clarify target audience, desired tone, and core goal.     │
 │ - Structure an outline or prompt blueprint (2-4 bullets).   │
 │ - DO NOT generate the final long text with Claude tokens.   │
 └──────────────────────────────┬──────────────────────────────┘
                                │
 ┌──────────────────────────────▼──────────────────────────────┐
-│ 2. DELEGATE GENERATION (OpenRouter via BlindWrite MCP)      │
+│ 2. DELEGATE GENERATION (OpenRouter via writer_generate)     │
 │ - Daily Work: Call `writer_generate` (uses #1 ranked model) │
-│ - Style Discovery: Call `benchmark_*` for a blind A/B duel  │
+│ - Optional: Pass `include_critique: true` for cheap review  │
+│ - Auto-exports a local copy to data/drafts/                 │
 └──────────────────────────────┬──────────────────────────────┘
                                │
 ┌──────────────────────────────▼──────────────────────────────┐
-│ 3. REVIEW & POLISH (Claude)                                 │
-│ - Critically inspect the returned draft from OpenRouter.    │
-│ - Highlight strongest sections & offer 1-2 punchy polish tips│
+│ 3. DIRECT DELIVERY (Zero Token Waste)                       │
+│ - Present the draft verbatim with the token/cost badge.     │
+│ - DO NOT burn Claude output tokens on unprompted critique.  │
+│ - Ask: "Want me to critique this or refine any section?"    │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -63,13 +65,17 @@ When the user asks: *"Help me draft a sales pitch email to engineering leaders"*
      {
        "prompt": "Write a punchy 120-word cold outreach email to a CTO. Emphasize a 70% setup time reduction, zero developer friction, and include a soft call to action.",
        "category": "Emails",
+       "include_critique": false,
+       "export_file": true,
        "temperature": 0.7
      }
      ```
-   - **Why this works**: `writer_generate` automatically queries your personal leaderboard, selects your #1 model for "Emails", or defaults to DeepSeek V3 ($0.14/1M tokens).
-3. **Review**:
-   - Present the draft to the user, displaying the model used, exact cost, and Claude tokens saved.
-   - Suggest 1-2 sharp refinements.
+   - **Why this works**: `writer_generate` automatically queries your personal leaderboard, selects your #1 model for "Emails" (or defaults to DeepSeek V3 at $0.14/1M tokens), and auto-exports a local markdown file to `data/drafts/`.
+3. **Direct Delivery (Zero Token Waste)**:
+   - Present the draft immediately with the metrics badge:
+     > ⚡ **Generated via DeepSeek V3** | ⏱️ 820ms | 💰 $0.0003 | 🛡️ **~420 Claude tokens saved** | 📁 Saved to: `data/drafts/...`
+   - Ask 1 closing question: *"Want me to critique this or refine any specific section?"*
+   - **The Anti-Tax Rule**: Strictly DO NOT generate an unprompted analysis, critique, or rewrite. If the user wants an automated critique without burning Claude tokens, set `include_critique: true` in `writer_generate`!
 
 ---
 

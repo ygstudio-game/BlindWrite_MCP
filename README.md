@@ -266,7 +266,7 @@ If you prefer to configure Claude Desktop manually instead of using `npm run set
 2. Formulates the prompt blueprint (Hook: shortening deal cycles by 40%; Body: 2 concrete metrics; CTA: 10-minute intro).
 3. **Delegates drafting**: Calls `writer_generate(category: "Emails", prompt: "...", max_tokens: 400)`.
 4. OpenRouter generates the draft in ~800ms using your personal #1 model (e.g. DeepSeek V3 for $0.0003).
-5. Claude presents the generated email, reports token metrics (saved ~300 Claude output tokens), and suggests two high-impact subject lines.
+5. **Zero-Tax Direct Delivery**: Claude presents the generated email verbatim with the metrics badge (saved ~300 Claude output tokens, cost $0.0003), auto-saved to `data/drafts/`, without burning extra tokens on unprompted critique.
 
 ---
 

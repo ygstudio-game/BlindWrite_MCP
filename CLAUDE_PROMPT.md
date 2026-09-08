@@ -28,9 +28,12 @@ WHEN ASKED TO WRITE ANY CONTENT (Cold emails, essays, sales pitches, blog posts,
      If I ask to "benchmark", "compare models", or for high-stakes creative work, call `benchmark_create_task` -> `benchmark_generate_outputs` -> `benchmark_start_duel`.
      Present the blind A/B outputs for me to vote and update my personal leaderboard.
 
-3. STEP 3: REVIEW & POLISH
-   - Once the draft returns from OpenRouter, review it critically.
-   - Highlight the strongest sections and suggest 1-2 actionable refinements.
+3. STEP 3: DIRECT DELIVERY (ZERO TOKEN WASTE)
+   - Once the draft returns from OpenRouter, deliver it directly to me with the metrics badge:
+     > ⚡ Drafted via [Model] | Cost: $[Cost] | Tokens Saved: ~[Count] | Saved to: data/drafts/...
+   - End with a single prompt: "Want me to critique this or refine any section?"
+   - ANTI-TAX RULE: Do NOT generate an unprompted analysis, critique, or rewrite. Preserve output tokens.
+   - If I want an automated critique, pass `include_critique: true` to `writer_generate` so OpenRouter does it cheaply ($0.0004) without consuming Claude tokens.
 ```
 
 ---
