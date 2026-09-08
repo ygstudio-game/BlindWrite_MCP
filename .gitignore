@@ -27,3 +27,8 @@ coverage/
 Thumbs.db
 .vscode/
 .idea/
+
+# Local scratch and specification files
+prompt.md
+Understand_Product_Requirements*.json
+skills/test.zip
