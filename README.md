@@ -118,7 +118,25 @@ Furthermore, evaluations are heavily skewed by **brand bias**: when an evaluator
 
 ## 5. Quickstart & Installation
 
-### Option A: 1-Click Automated Setup (Recommended)
+### Option A: 1-Line Autonomous Remote Installer (Fastest — No Git Clone Required)
+
+Run a single command in your terminal. It will automatically check/install Node.js & Git, clone into your user directory, build the project, prompt for your OpenRouter key, and configure Claude Desktop:
+
+#### Windows (PowerShell):
+```powershell
+irm https://raw.githubusercontent.com/launchpit/BlindWrite_MCP/master/scripts/install.ps1 | iex
+```
+*(Tip: You can pre-supply your key to make it 100% headless: `$env:OPENROUTER_API_KEY="sk-or-v1-..."; irm https://raw.githubusercontent.com/launchpit/BlindWrite_MCP/master/scripts/install.ps1 | iex`)*
+
+#### macOS & Linux (Terminal):
+```bash
+curl -fsSL https://raw.githubusercontent.com/launchpit/BlindWrite_MCP/master/scripts/install.sh | bash
+```
+*(Tip: Or headless: `OPENROUTER_API_KEY="sk-or-v1-..." curl -fsSL https://raw.githubusercontent.com/launchpit/BlindWrite_MCP/master/scripts/install.sh | bash`)*
+
+---
+
+### Option B: Local 1-Click Setup (If already cloned)
 
 #### On Windows:
 Simply run `setup.bat` (or double-click it in File Explorer):
@@ -141,7 +159,7 @@ npm run setup
 
 ---
 
-### Option B: Manual Setup
+### Option C: Manual Setup
 
 1. **Clone and Install**:
 ```bash

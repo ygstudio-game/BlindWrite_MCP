@@ -78,7 +78,12 @@ async function main() {
   // 3. API Key check
   const envPath = path.join(projectRoot, '.env');
   let existingKey = '';
-  if (fs.existsSync(envPath)) {
+  const apiKeyFlag = cliArgs.find((a) => a.startsWith('--api-key='));
+  const envApiKey = apiKeyFlag ? apiKeyFlag.split('=')[1].trim() : process.env.OPENROUTER_API_KEY;
+
+  if (envApiKey && !envApiKey.includes('your-openrouter-key')) {
+    existingKey = envApiKey.trim();
+  } else if (fs.existsSync(envPath)) {
     const envContent = fs.readFileSync(envPath, 'utf8');
     const match = envContent.match(/^OPENROUTER_API_KEY=(.+)$/m);
     if (match && match[1] && !match[1].includes('your-openrouter-key')) {
@@ -89,9 +94,13 @@ async function main() {
   let apiKey = existingKey;
   if (existingKey) {
     const masked = existingKey.slice(0, 8) + '...' + existingKey.slice(-4);
-    const useExisting = await ask(`Found existing OpenRouter API key (${masked}). Keep it? (Y/n)`, 'Y');
-    if (useExisting.toLowerCase() !== 'y') {
-      apiKey = await ask('Enter your new OpenRouter API Key (sk-or-v1-...)');
+    if (isAuto) {
+      apiKey = existingKey;
+    } else {
+      const useExisting = await ask(`Found OpenRouter API key (${masked}). Use it? (Y/n)`, 'Y');
+      if (useExisting.toLowerCase() !== 'y') {
+        apiKey = await ask('Enter your new OpenRouter API Key (sk-or-v1-...)');
+      }
     }
   } else {
     apiKey = await ask('Enter your OpenRouter API Key (sk-or-v1-...)');
