@@ -1,8 +1,8 @@
 # BlindWrite MCP — Windows 1-Line Remote Installer & Auto-Configurator
 # Usage:
-#   irm https://raw.githubusercontent.com/launchpit/BlindWrite_MCP/master/scripts/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/ygstudio-game/BlindWrite_MCP/master/scripts/install.ps1 | iex
 # Or with API key:
-#   $env:OPENROUTER_API_KEY="sk-or-v1-..."; irm https://raw.githubusercontent.com/launchpit/BlindWrite_MCP/master/scripts/install.ps1 | iex
+#   $env:OPENROUTER_API_KEY="sk-or-v1-..."; irm https://raw.githubusercontent.com/ygstudio-game/BlindWrite_MCP/master/scripts/install.ps1 | iex
 
 $ErrorActionPreference = "Stop"
 
@@ -12,7 +12,7 @@ Write-Host "======================================================" -ForegroundC
 Write-Host ""
 
 # 1. Determine Installation Directory
-$RepoUrl = "https://github.com/launchpit/BlindWrite_MCP.git"
+$RepoUrl = "https://github.com/ygstudio-game/BlindWrite_MCP.git"
 $TargetDir = ""
 
 # Check if currently inside the repository
