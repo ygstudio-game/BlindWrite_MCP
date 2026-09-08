@@ -6,8 +6,14 @@ echo    BlindWrite MCP -- Windows 1-Click Setup & Install
 echo ======================================================
 echo.
 
+:: Auto-detect common Node.js and NVM paths if not already in PATH
+if exist "C:\nvm4w\nodejs" set "PATH=C:\nvm4w\nodejs;C:\nvm4w;%PATH%"
+if defined NVM_SYMLINK if exist "%NVM_SYMLINK%" set "PATH=%NVM_SYMLINK%;%NVM_HOME%;%PATH%"
+if exist "%ProgramFiles%\nodejs" set "PATH=%ProgramFiles%\nodejs;%APPDATA%\npm;%PATH%"
+if exist "%LOCALAPPDATA%\Programs\node" set "PATH=%LOCALAPPDATA%\Programs\node;%PATH%"
+
 :: 1. Check for Node.js
-where node >nul 2>nul
+node -v >nul 2>nul
 if %ERRORLEVEL% neq 0 (
     echo [!] Node.js is not installed or not in your PATH.
     echo [*] Attempting to install Node.js LTS via winget...
@@ -30,7 +36,7 @@ if %ERRORLEVEL% neq 0 (
 )
 
 :: Re-verify Node.js
-where node >nul 2>nul
+node -v >nul 2>nul
 if %ERRORLEVEL% neq 0 (
     echo [!] Node.js is still not detected in PATH.
     echo Please restart your terminal/computer after installing Node.js and run setup.bat again.
