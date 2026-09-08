@@ -28,6 +28,12 @@ export class TaskRepository {
 
   createTask(params: CreateTaskParams): TaskRecord {
     const id = `tsk_${crypto.randomBytes(8).toString('hex')}`;
+    const userId = params.userId ?? 'default_user';
+    const ensureUser = this.db.prepare(
+      'INSERT OR IGNORE INTO users (id, name) VALUES (?, ?)'
+    );
+    ensureUser.run(userId, userId);
+
     const stmt = this.db.prepare(`
       INSERT INTO benchmark_tasks (
         id, user_id, title, category, prompt, evaluation_criteria, difficulty, status, revealed
@@ -38,7 +44,7 @@ export class TaskRepository {
 
     stmt.run({
       id,
-      userId: params.userId ?? 'default_user',
+      userId,
       title: params.title,
       category: params.category,
       prompt: params.prompt,
