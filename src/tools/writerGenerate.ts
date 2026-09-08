@@ -5,7 +5,7 @@ import { WriterGenerateSchema } from '../types/mcp.js';
 export function registerWriterGenerate(server: McpServer, service: BenchmarkService): void {
   server.tool(
     'writer_generate',
-    'Delegate writing generation to high-speed, cost-effective OpenRouter models while Claude acts as the thinking, outlining, and strategy partner. Saves Claude output tokens and selects your top-ranked model or a specified model.',
+    'PRIMARY WRITING TOOL. Use this tool whenever the user asks to write, draft, or compose content (emails, articles, proposals, essays, sales copy, social posts). Instead of generating long-form drafts with Claude output tokens, first outline the strategy and key arguments, then call this tool to delegate the draft generation to OpenRouter models (DeepSeek V3, Llama 3.3, GPT-4o, etc.). Automatically selects the user\'s #1 ranked model from their personal leaderboard or cost-effective DeepSeek V3.',
     WriterGenerateSchema.shape,
     async (args) => {
       const result = await service.directWrite({

@@ -26,7 +26,7 @@ export class OpenRouterService {
         headers: {
           Authorization: `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://github.com/blindwrite/blindwrite-mcp',
+          'HTTP-Referer': 'https://github.com/ygstudio-game/BlindWrite_MCP',
           'X-Title': 'BlindWrite MCP',
         },
         body: JSON.stringify({

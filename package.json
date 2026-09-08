@@ -24,6 +24,14 @@
   ],
   "author": "Yadnyesh Borole",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ygstudio-game/BlindWrite_MCP.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ygstudio-game/BlindWrite_MCP/issues"
+  },
+  "homepage": "https://github.com/ygstudio-game/BlindWrite_MCP#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
     "better-sqlite3": "^13.0.3",

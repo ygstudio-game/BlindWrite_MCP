@@ -80,7 +80,8 @@ Open `claude_desktop_config.json` in a text editor (e.g. Notepad, VS Code) and a
 
 1. Restart Claude Desktop completely (Right-click system tray icon -> Quit, then relaunch).
 2. Open a new chat.
-3. Look for the 🔨 (hammer) icon in the bottom right corner of the chat input box. Clicking it should list the 10 `benchmark_*` tools:
+3. Look for the 🔨 (hammer) icon in the bottom right corner of the chat input box. Clicking it should list all 11 BlindWrite tools:
+   - `writer_generate` (Primary token-saving writing delegator)
    - `benchmark_create_task`
    - `benchmark_list_models`
    - `benchmark_generate_outputs`
@@ -96,8 +97,18 @@ Open `claude_desktop_config.json` in a text editor (e.g. Notepad, VS Code) and a
 
 ## 5. Recommended Prompts to Try
 
-Try asking Claude:
+### Mode 1: Daily Direct Writing (Save Claude Tokens)
+- *"Help me write a cold outreach email to a VP of Sales. Outline the strategy first and use writer_generate to draft it with my top-ranked model."*
+- *"Outline a technical RFC for our authentication migration and delegate the draft using writer_generate."*
+
+### Mode 2: Blind A/B Benchmarking (Discover Your Style)
 - *"Benchmark the top writing models for writing executive pitch emails."*
 - *"Show me my personal writing leaderboard across all models."*
 - *"Analyze my writing preferences based on my past benchmark votes."*
 - *"Compare Claude 3.5 Sonnet vs GPT-4o head-to-head in technical writing."*
+
+---
+
+**Author:** Yadnyesh Borole  
+**Repository:** [https://github.com/ygstudio-game/BlindWrite_MCP](https://github.com/ygstudio-game/BlindWrite_MCP)
+
