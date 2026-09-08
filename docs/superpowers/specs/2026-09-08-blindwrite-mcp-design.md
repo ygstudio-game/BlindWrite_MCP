@@ -449,11 +449,11 @@ Example `claude_desktop_config.json`:
     "blindwrite": {
       "command": "node",
       "args": [
-        "D:\\COding\\InternShip Work\\E-STUDYPAL\\LAUNCHPIT\\BlindWrite_MCP\\dist\\index.js"
+        "/absolute/path/to/BlindWrite_MCP/dist/index.js"
       ],
       "env": {
         "OPENROUTER_API_KEY": "sk-or-v1-...",
-        "DB_PATH": "D:\\COding\\InternShip Work\\E-STUDYPAL\\LAUNCHPIT\\BlindWrite_MCP\\data\\blindwrite.sqlite",
+        "DB_PATH": "/absolute/path/to/BlindWrite_MCP/data/blindwrite.sqlite",
         "LOG_LEVEL": "info"
       }
     }

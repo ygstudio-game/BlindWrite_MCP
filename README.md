@@ -163,18 +163,21 @@ To connect BlindWrite MCP to Claude Desktop:
     "blindwrite": {
       "command": "node",
       "args": [
-        "D:\\COding\\InternShip Work\\E-STUDYPAL\\LAUNCHPIT\\BlindWrite_MCP\\dist\\index.js"
+        "/absolute/path/to/BlindWrite_MCP/dist/index.js"
       ],
       "env": {
         "OPENROUTER_API_KEY": "sk-or-v1-your-openrouter-key-here",
-        "DB_PATH": "D:\\COding\\InternShip Work\\E-STUDYPAL\\LAUNCHPIT\\BlindWrite_MCP\\data\\blindwrite.sqlite",
+        "DB_PATH": "/absolute/path/to/BlindWrite_MCP/data/blindwrite.sqlite",
         "LOG_LEVEL": "info"
       }
     }
   }
 }
 ```
-*(Adjust the absolute path to match your local installation)*
+
+> **Platform Path Examples:**
+> - **macOS / Linux:** `"/Users/yourname/projects/BlindWrite_MCP/dist/index.js"`
+> - **Windows:** `"C:\\Users\\yourname\\projects\\BlindWrite_MCP\\dist\\index.js"` *(ensure backslashes are escaped with `\\`)*
 
 3. Restart Claude Desktop. You will see the hammer icon with 10 BlindWrite tools ready to use!
 

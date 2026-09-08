@@ -17,7 +17,7 @@ This guide walks you through connecting your local **BlindWrite MCP** server to 
 Ensure the project is built locally:
 
 ```bash
-cd "D:\COding\InternShip Work\E-STUDYPAL\LAUNCHPIT\BlindWrite_MCP"
+cd /path/to/BlindWrite_MCP
 npm install
 npm run build
 ```
@@ -44,11 +44,11 @@ Open `claude_desktop_config.json` in a text editor (e.g. Notepad, VS Code) and a
     "blindwrite": {
       "command": "node",
       "args": [
-        "D:\\COding\\InternShip Work\\E-STUDYPAL\\LAUNCHPIT\\BlindWrite_MCP\\dist\\index.js"
+        "/absolute/path/to/BlindWrite_MCP/dist/index.js"
       ],
       "env": {
         "OPENROUTER_API_KEY": "sk-or-v1-your-openrouter-key-here",
-        "DB_PATH": "D:\\COding\\InternShip Work\\E-STUDYPAL\\LAUNCHPIT\\BlindWrite_MCP\\data\\blindwrite.sqlite",
+        "DB_PATH": "/absolute/path/to/BlindWrite_MCP/data/blindwrite.sqlite",
         "LOG_LEVEL": "info"
       }
     }
@@ -56,7 +56,9 @@ Open `claude_desktop_config.json` in a text editor (e.g. Notepad, VS Code) and a
 }
 ```
 
-> **Note on Windows Paths**: In JSON files, backslashes must be escaped with double backslashes (`\\`).
+> **Note on Paths**:
+> - On **Windows**, escape backslashes with double backslashes: e.g. `"C:\\Users\\yourname\\projects\\BlindWrite_MCP\\dist\\index.js"`.
+> - On **macOS / Linux**, use standard forward slashes: e.g. `"/Users/yourname/projects/BlindWrite_MCP/dist/index.js"`.
 
 ---
 
