@@ -135,7 +135,7 @@ LOG_LEVEL=info
   console.log(`   ${claudeConfigPath}\n`);
 
   const autoInstall = await ask('Would you like to automatically configure Claude Desktop now? (Y/n)', 'Y');
-
+  let currentConfig = { mcpServers: {} };
   if (autoInstall.toLowerCase() === 'y') {
     try {
       const configDir = path.dirname(claudeConfigPath);
@@ -143,7 +143,6 @@ LOG_LEVEL=info
         fs.mkdirSync(configDir, { recursive: true });
       }
 
-      let currentConfig = { mcpServers: {} };
       if (fs.existsSync(claudeConfigPath)) {
         try {
           const raw = fs.readFileSync(claudeConfigPath, 'utf8');
@@ -170,14 +169,21 @@ LOG_LEVEL=info
     }
   }
 
-  // 5. Automatically install Claude & Agent Skill
+  // 5. Automatically install Skill for Claude Desktop
   const skillSource = path.join(projectRoot, 'skills', 'writing-orchestrator', 'SKILL.md');
   if (fs.existsSync(skillSource)) {
     const home = os.homedir();
+    const claudeDir = path.dirname(claudeConfigPath);
+    
+    // Dedicated Claude Desktop and Claude skill directories
     const targetSkillDirs = [
+      path.join(claudeDir, 'skills', 'writing-orchestrator'),
       path.join(home, '.claude', 'skills', 'writing-orchestrator'),
-      path.join(home, '.gemini', 'config', 'skills', 'writing-orchestrator'),
     ];
+
+    if (currentConfig.coworkUserFilesPath) {
+      targetSkillDirs.push(path.join(currentConfig.coworkUserFilesPath, 'skills', 'writing-orchestrator'));
+    }
 
     let installedCount = 0;
     for (const dir of targetSkillDirs) {
@@ -187,14 +193,14 @@ LOG_LEVEL=info
         }
         const targetFile = path.join(dir, 'SKILL.md');
         fs.copyFileSync(skillSource, targetFile);
-        console.log(`📋 Auto-installed skill: ${targetFile}`);
+        console.log(`📋 Auto-installed Claude Desktop skill: ${targetFile}`);
         installedCount++;
       } catch {
         // Non-fatal if folder not writable
       }
     }
     if (installedCount > 0) {
-      console.log('✅ writing-orchestrator skill installed globally for Claude and AI agents!\n');
+      console.log('✅ writing-orchestrator skill installed successfully for Claude Desktop!\n');
     }
   }
 

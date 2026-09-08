@@ -215,6 +215,10 @@ If you prefer to configure Claude Desktop manually instead of using `npm run set
 > - **Windows:** `"C:\\Users\\yourname\\projects\\BlindWrite_MCP\\dist\\index.js"` *(ensure backslashes are escaped with `\\`)*
 
 3. Restart Claude Desktop. You will see the hammer icon with all 11 BlindWrite tools ready to use!
+4. **Writing Orchestrator Skill & Prompt:**
+   - The setup script auto-installs the skill into Claude Desktop's skill directories (`%APPDATA%\Claude\skills\writing-orchestrator\SKILL.md` and `~/.claude/skills/writing-orchestrator/SKILL.md`).
+   - The server also exposes a native MCP prompt `writing-orchestrator` accessible right from Claude Desktop!
+   - You can also paste [`CLAUDE_PROMPT.md`](./CLAUDE_PROMPT.md) into any Claude Desktop Project Custom Instructions.
 
 ---
 

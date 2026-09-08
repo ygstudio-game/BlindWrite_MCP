@@ -21,6 +21,12 @@ describe('MCP Tools Integration', () => {
     expect(server).toBeDefined();
     expect(benchmarkService).toBeDefined();
 
+    // Verify MCP Prompt registration for Claude Desktop
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const registeredPrompts = (server as any)._registeredPrompts;
+    expect(registeredPrompts).toBeDefined();
+    expect(registeredPrompts['writing-orchestrator']).toBeDefined();
+
     // Verify tools can be invoked via benchmarkService
     const task = benchmarkService.createTask({
       title: 'Email Benchmark',

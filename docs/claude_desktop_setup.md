@@ -95,7 +95,17 @@ Open `claude_desktop_config.json` in a text editor (e.g. Notepad, VS Code) and a
 
 ---
 
-## 5. Recommended Prompts to Try
+## 5. Skills & Prompts for Claude Desktop
+
+BlindWrite MCP offers three seamless ways to instruct Claude to think while delegating writing:
+
+1. **Auto-Installed Skill**: The setup wizard automatically installs the `writing-orchestrator` skill to `%APPDATA%\Claude\skills\writing-orchestrator\SKILL.md` (and `~/.claude/skills/writing-orchestrator/SKILL.md`).
+2. **Native MCP Prompt**: BlindWrite registers an official MCP prompt named `writing-orchestrator`. You can invoke it directly inside Claude Desktop via prompt menus / `/writing-orchestrator`.
+3. **Project Custom Instructions**: If you use Claude Desktop Projects, copy the contents of [`CLAUDE_PROMPT.md`](../CLAUDE_PROMPT.md) directly into your Project's *Custom Instructions*.
+
+---
+
+## 6. Recommended Prompts to Try
 
 ### Mode 1: Daily Direct Writing (Save Claude Tokens)
 - *"Help me write a cold outreach email to a VP of Sales. Outline the strategy first and use writer_generate to draft it with my top-ranked model."*

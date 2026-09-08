@@ -12,6 +12,7 @@ import { registerBenchmarkCompareModels } from './tools/benchmarkCompareModels.j
 import { registerBenchmarkAnalyzePreferences } from './tools/benchmarkAnalyzePreferences.js';
 import { registerBenchmarkGetModelStats } from './tools/benchmarkGetModelStats.js';
 import { registerWriterGenerate } from './tools/writerGenerate.js';
+import { registerWritingOrchestratorPrompt } from './prompts/writingOrchestrator.js';
 import { logger } from './utils/logger.js';
 
 export function createMcpServer(
@@ -41,7 +42,10 @@ export function createMcpServer(
   registerBenchmarkGetModelStats(server, benchmarkService);
   registerWriterGenerate(server, benchmarkService);
 
-  logger.info('Registered 11 BlindWrite MCP tools on McpServer');
+  // Register MCP Prompt for Claude Desktop
+  registerWritingOrchestratorPrompt(server);
+
+  logger.info('Registered 11 BlindWrite MCP tools and writing-orchestrator prompt on McpServer');
 
   return { server, benchmarkService };
 }
