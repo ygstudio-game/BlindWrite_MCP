@@ -118,39 +118,56 @@ Furthermore, evaluations are heavily skewed by **brand bias**: when an evaluator
 
 ## 5. Quickstart & Installation
 
-### Prerequisites
-- [Node.js](https://nodejs.org/) v20+ or v24 LTS
-- An [OpenRouter API Key](https://openrouter.ai/keys)
+### Option A: 1-Click Automated Setup (Recommended)
 
-### 1. Clone and Install
+#### On Windows:
+Simply run `setup.bat` (or double-click it in File Explorer):
+```cmd
+setup.bat
+```
+* **Auto-installs Node.js** via `winget` if not detected on your system.
+* Installs dependencies (`npm install`).
+* Compiles TypeScript (`npm run build`).
+* Prompts for your OpenRouter API key.
+* **Automatically merges** the configuration into `%APPDATA%\Claude\claude_desktop_config.json` (with automatic backup).
+
+#### On macOS / Linux:
+```bash
+chmod +x setup.sh
+./setup.sh
+# or after npm install:
+npm run setup
+```
+
+---
+
+### Option B: Manual Setup
+
+1. **Clone and Install**:
 ```bash
 git clone https://github.com/your-org/BlindWrite_MCP.git
 cd BlindWrite_MCP
 npm install
 ```
 
-### 2. Configure Environment
-Create your `.env` file from the example:
+2. **Configure Environment**:
 ```bash
 cp .env.example .env
 ```
-Edit `.env`:
-```ini
-OPENROUTER_API_KEY=sk-or-v1-your-actual-openrouter-key
-DB_PATH=./data/blindwrite.sqlite
-LOG_LEVEL=info
-```
+Edit `.env` and set `OPENROUTER_API_KEY=sk-or-v1-...`.
 
-### 3. Build the Server
+3. **Build and Run Setup Wizard**:
 ```bash
 npm run build
+npm run setup
 ```
+The interactive wizard will automatically resolve exact paths and update Claude Desktop for you!
 
 ---
 
-## 6. Claude Desktop Configuration
+## 6. Claude Desktop Configuration (Manual)
 
-To connect BlindWrite MCP to Claude Desktop:
+If you prefer to configure Claude Desktop manually instead of using `npm run setup`:
 
 1. Open your Claude Desktop configuration file:
    - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`

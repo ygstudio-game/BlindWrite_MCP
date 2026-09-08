@@ -12,21 +12,35 @@ This guide walks you through connecting your local **BlindWrite MCP** server to 
 
 ---
 
-## 2. Compile BlindWrite MCP
+## 2. 1-Click Automated Setup (Recommended)
 
-Ensure the project is built locally:
+### On Windows:
+Run `setup.bat` (or double-click it in File Explorer):
+```cmd
+setup.bat
+```
+- Checks for Node.js (installs it via winget if missing)
+- Runs `npm install` and `npm run build`
+- Asks for your OpenRouter API key
+- Automatically merges the configuration into `%APPDATA%\Claude\claude_desktop_config.json`
 
+### On macOS / Linux:
+```bash
+npm run setup
+```
+
+---
+
+## 3. Manual Configuration (Alternative)
+
+If you prefer to configure manually:
+
+### Compile BlindWrite MCP
 ```bash
 cd /path/to/BlindWrite_MCP
 npm install
 npm run build
 ```
-
-Verify that `dist/index.js` exists.
-
----
-
-## 3. Configure Claude Desktop
 
 ### Locate Configuration File
 
