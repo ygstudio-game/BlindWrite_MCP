@@ -77,7 +77,7 @@ if %ERRORLEVEL% neq 0 (
 :: 5. Launch interactive setup wizard
 echo [*] Launching BlindWrite MCP configuration wizard...
 echo.
-node scripts/setup.js
+node scripts/setup.js %*
 
 echo.
 echo ======================================================

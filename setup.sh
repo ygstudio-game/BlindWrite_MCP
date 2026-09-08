@@ -36,4 +36,4 @@ npm run build
 # 4. Run setup wizard
 echo "[*] Launching BlindWrite MCP configuration wizard..."
 echo ""
-node scripts/setup.js
+node scripts/setup.js "$@"

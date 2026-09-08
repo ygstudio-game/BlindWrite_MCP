@@ -10,12 +10,21 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '..');
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
+const cliArgs = process.argv.slice(2);
+const isAuto = cliArgs.includes('--yes') || cliArgs.includes('-y') || !process.stdin.isTTY;
+const isDryRun = cliArgs.includes('--dry-run');
+
+const rl = isAuto
+  ? null
+  : readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
 
 function ask(question, defaultValue = '') {
+  if (isAuto) {
+    return Promise.resolve(defaultValue);
+  }
   return new Promise((resolve) => {
     const promptText = defaultValue ? `${question} [${defaultValue}]: ` : `${question}: `;
     rl.question(promptText, (answer) => {
@@ -162,11 +171,11 @@ LOG_LEVEL=info
   console.log('2. Look for the 🔨 icon in Claude Desktop chat.');
   console.log('3. Ask: "Benchmark writing models for cold outreach emails!"\n');
 
-  rl.close();
+  if (rl) rl.close();
 }
 
 main().catch((err) => {
   console.error('Fatal error in setup:', err);
-  rl.close();
+  if (rl) rl.close();
   process.exit(1);
 });
