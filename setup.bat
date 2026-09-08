@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 echo ======================================================
-echo    BlindWrite MCP -- Windows 1-Click Setup & Install
+echo    BlindWrite MCP -- Windows 1-Click Setup and Configuration
 echo ======================================================
 echo.
 
