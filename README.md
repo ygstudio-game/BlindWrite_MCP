@@ -1,28 +1,26 @@
 # BlindWrite MCP 🖋️
-
-> **Production-grade Model Context Protocol (MCP) server for blind, bias-free AI writing benchmarks inside Claude Desktop using OpenRouter.**
-
-[![Tests](https://img.shields.io/badge/tests-26%20passed-brightgreen.svg)](#testing)
+ 
+> **Think with Claude, Write with OpenRouter.**
+> Production-grade Model Context Protocol (MCP) server for blind, bias-free AI writing benchmarks and high-speed token-saving writing delegation inside Claude Desktop.
+ 
+[![Tests](https://img.shields.io/badge/tests-29%20passed-brightgreen.svg)](#testing)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7+-blue.svg)](#tech-stack)
 [![Node](https://img.shields.io/badge/Node.js-24%20LTS-green.svg)](#tech-stack)
 [![License](https://img.shields.io/badge/License-MIT-purple.svg)](#license)
-
+ 
 ---
-
+ 
 ## 1. Problem & Purpose
-
-Public AI benchmarks (e.g. Chatbot Arena, LMSYS, MMLU, AlpacaEval) measure general coding or broad knowledge. They fail to answer the most critical question for writers, knowledge workers, and marketers:
-
-> **"Which AI writing model is actually best for *me* and *my* personal style, tone, and specific writing tasks?"**
-
-Furthermore, evaluations are heavily skewed by **brand bias**: when an evaluator sees "OpenAI GPT-4o" or "Anthropic Claude 3.5 Sonnet", cognitive bias leads them to rate prominent brand names higher.
-
-**BlindWrite MCP** transforms Claude Desktop into an objective blind evaluation arena:
-- **Zero Model Leakage**: Competing models generate responses to the identical prompt, but outputs are stripped of names, providers, and logos, receiving cryptographically randomized tokens (`Response A` vs `Response B`).
-- **Cryptographic Anti-Bias Pairing**: Random 50/50 position assignment eliminates positional bias.
-- **Mathematical Pairwise Rankings**: Evaluates choices using **Bradley-Terry Maximum Likelihood Estimation (MM iteration)** with Laplace prior regularization and Fisher Information confidence intervals, alongside dynamic **Elo** ratings.
-- **Preference Analytics Engine**: Correlates user voting behavior with writing metrics (brevity, bulleted structure, formality) to explain *why* top models work best for you.
-- **Tournament Reveal Stage**: Model identities are unmasked only when you conclude voting and request final results.
+ 
+Writers, marketers, and knowledge workers face two major challenges when using LLMs for writing:
+1. **Token Inefficiency & Cost**: Asking Claude to generate thousands of words of draft text burns through Claude output limits and tokens rapidly.
+2. **Brand Bias in Model Selection**: When picking an AI model, brand names ("GPT-4o", "Claude 3.5 Sonnet") skew perception, even when lightweight, ultra-cheap models (e.g. DeepSeek V3 at $0.14/1M tokens) might write better copy for your specific voice.
+ 
+**BlindWrite MCP** introduces the **"Think with Claude, Write with OpenRouter"** hybrid workflow:
+- **Claude for Thinking & Strategy**: Claude handles deep reasoning, structural outlines, audience angles, and critical review.
+- **OpenRouter for Heavy Writing**: Claude delegates long-form drafting directly via `writer_generate` to your top-ranked OpenRouter model (or DeepSeek V3), generating drafts in seconds while saving thousands of Claude generation tokens.
+- **Blind A/B Benchmarking**: When testing styles, competing frontier models generate blind drafts (`Response A` vs `Response B`) with zero brand leakage. You vote, and the Bradley-Terry MLE & Elo engine trains your personal leaderboard!
+- **Preference Analytics**: Discovers empirical writing metrics (conciseness, bulleted structure, formality) to show *why* your top models resonate with you.
 
 ---
 
@@ -73,20 +71,21 @@ Furthermore, evaluations are heavily skewed by **brand bias**: when an evaluator
 
 ---
 
-## 3. The 10 MCP Tools
+## 3. The 11 MCP Tools
 
-| Tool Name | Purpose | Blindness Protection |
+| Tool Name | Purpose | Role in "Think with Claude, Write with OpenRouter" |
 |---|---|---|
-| `benchmark_create_task` | Creates a new writing task with category and prompt | Assigns clean task ID; status `created` |
-| `benchmark_list_models` | Lists models in the registry with pricing and status | Used for benchmark configuration |
-| `benchmark_generate_outputs` | Dispatches prompt to models via OpenRouter in parallel | Returns ONLY anonymous tokens (`anon_xxxx`), zero model names |
-| `benchmark_start_duel` | Starts a randomized, blind A/B battle | 50/50 coin toss determines Response A vs B; identities hidden |
-| `benchmark_submit_vote` | Submits preference (`A`, `B`, or `tie`) with optional scores | Records vote, updates Elo; models remain hidden |
-| `benchmark_get_results` | Retrieves task results; unmasks when `reveal: true` | Identities remain masked until explicit reveal |
-| `benchmark_get_leaderboard` | Returns personal or global model leaderboards | Ranked by Bradley-Terry MLE or Elo with confidence levels |
-| `benchmark_compare_models` | Head-to-head comparison between two specific models | Direct win/loss/tie record, win percentages, and dimension ratings |
-| `benchmark_analyze_preferences` | Discovers writing preferences (conciseness, structure) | Empirical correlation without LLM hallucination |
-| `benchmark_get_model_stats` | Exhaustive performance card for a single model | Battle record, win rate, average latency, and token cost |
+| `writer_generate` | Directly generates drafts with OpenRouter | **Token-Saver**: Claude outlines; OpenRouter model writes the draft |
+| `benchmark_create_task` | Creates a new writing benchmark task | Assigns clean task ID; status `created` |
+| `benchmark_list_models` | Lists models with pricing & status | Used for model selection and registry status |
+| `benchmark_generate_outputs` | Dispatches prompt to models in parallel | Returns ONLY anonymous tokens (`anon_xxxx`), zero model names |
+| `benchmark_start_duel` | Starts a randomized, blind A/B battle | 50/50 coin toss determines Response A vs B; eliminates brand bias |
+| `benchmark_submit_vote` | Submits preference (`A`, `B`, or `tie`) | Records vote, updates Bradley-Terry & Elo ratings |
+| `benchmark_get_results` | Retrieves task results; unmasks on reveal | Identities remain hidden until explicit user reveal |
+| `benchmark_get_leaderboard` | Returns personal or global leaderboards | Bradley-Terry MLE & Elo rankings guide `writer_generate` |
+| `benchmark_compare_models` | Head-to-head comparison of two models | Direct win/loss record and dimensional ratings |
+| `benchmark_analyze_preferences` | Discovers personal writing style preferences | Explains why certain models work best for you |
+| `benchmark_get_model_stats` | Deep performance card for a single model | Battle record, win rate, latency, and token cost |
 
 ---
 

@@ -11,6 +11,7 @@ import { registerBenchmarkGetLeaderboard } from './tools/benchmarkGetLeaderboard
 import { registerBenchmarkCompareModels } from './tools/benchmarkCompareModels.js';
 import { registerBenchmarkAnalyzePreferences } from './tools/benchmarkAnalyzePreferences.js';
 import { registerBenchmarkGetModelStats } from './tools/benchmarkGetModelStats.js';
+import { registerWriterGenerate } from './tools/writerGenerate.js';
 import { logger } from './utils/logger.js';
 
 export function createMcpServer(
@@ -27,7 +28,7 @@ export function createMcpServer(
 
   const benchmarkService = new BenchmarkService(db, openRouterApiKey);
 
-  // Register all 10 MCP tools
+  // Register all 11 MCP tools
   registerBenchmarkCreateTask(server, benchmarkService);
   registerBenchmarkListModels(server, benchmarkService);
   registerBenchmarkGenerateOutputs(server, benchmarkService);
@@ -38,8 +39,9 @@ export function createMcpServer(
   registerBenchmarkCompareModels(server, benchmarkService);
   registerBenchmarkAnalyzePreferences(server, benchmarkService);
   registerBenchmarkGetModelStats(server, benchmarkService);
+  registerWriterGenerate(server, benchmarkService);
 
-  logger.info('Registered 10 BlindWrite MCP tools on McpServer');
+  logger.info('Registered 11 BlindWrite MCP tools on McpServer');
 
   return { server, benchmarkService };
 }

@@ -62,3 +62,13 @@ export const BenchmarkAnalyzePreferencesSchema = z.object({
 export const BenchmarkGetModelStatsSchema = z.object({
   model_id: z.string().describe('The model ID to inspect'),
 });
+
+export const WriterGenerateSchema = z.object({
+  prompt: z.string().min(1).describe('The writing prompt crafted by Claude after thinking/outlining'),
+  system_prompt: z.string().optional().describe('Optional system prompt defining voice, tone, or style guidelines'),
+  category: z.string().optional().describe('Optional writing category (e.g. "Emails", "Creative Writing", "Technical Writing") used to pick the top-ranked model from your personal leaderboard'),
+  model_id: z.string().optional().describe('Optional specific OpenRouter model ID (e.g. "deepseek/deepseek-chat", "openai/gpt-4o", "anthropic/claude-3.5-sonnet"). Defaults to your #1 ranked model or DeepSeek V3.'),
+  temperature: z.number().min(0).max(2).optional().default(0.7).describe('Sampling temperature'),
+  max_tokens: z.number().optional().describe('Optional maximum output tokens'),
+});
+

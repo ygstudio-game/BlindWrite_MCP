@@ -32,6 +32,7 @@ export class OpenRouterService {
         body: JSON.stringify({
           model: model.openrouter_model_id,
           messages: [
+            ...(options.systemPrompt ? [{ role: 'system', content: options.systemPrompt }] : []),
             {
               role: 'user',
               content: prompt,

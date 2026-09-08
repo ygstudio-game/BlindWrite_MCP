@@ -1,6 +1,7 @@
 import type { ModelRecord } from '../db/repositories/modelRepo.js';
 
 export interface GenerationOptions {
+  systemPrompt?: string;
   temperature?: number;
   maxTokens?: number;
   timeoutMs?: number;

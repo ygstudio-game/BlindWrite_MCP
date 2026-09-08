@@ -668,4 +668,127 @@ export class BenchmarkService {
   analyzePreferences(category?: string, userId: string = 'default_user'): PreferenceReport {
     return this.analyticsService.analyzeUserPreferences(userId, category);
   }
+
+  async directWrite(params: {
+    prompt: string;
+    systemPrompt?: string;
+    category?: string;
+    modelId?: string;
+    temperature?: number;
+    maxTokens?: number;
+    userId?: string;
+  }): Promise<{
+    text: string;
+    modelId: string;
+    modelName: string;
+    provider: string;
+    latencyMs: number;
+    estimatedCostUsd: number;
+    tokensPrompt: number;
+    tokensCompletion: number;
+    selectionReason: string;
+  }> {
+    let targetModelId = params.modelId;
+    let selectionReason = 'Explicitly specified by user/Claude';
+
+    if (!targetModelId) {
+      // 1. Try personal ranking for the given category
+      if (params.category) {
+        const catRankings = this.rankingRepo.getRankings({
+          scope: 'personal',
+          userId: params.userId ?? 'default_user',
+          category: params.category,
+        });
+        if (catRankings.length > 0) {
+          targetModelId = catRankings[0].model_id;
+          selectionReason = `Ranked #1 on your personal leaderboard for category "${params.category}"`;
+        }
+      }
+
+      // 2. Try global/overall personal ranking if still unset
+      if (!targetModelId) {
+        const overallRankings = this.rankingRepo.getRankings({
+          scope: 'personal',
+          userId: params.userId ?? 'default_user',
+          category: null,
+        });
+        if (overallRankings.length > 0) {
+          targetModelId = overallRankings[0].model_id;
+          selectionReason = 'Ranked #1 on your overall personal leaderboard';
+        }
+      }
+
+      // 3. Fallback to default high-speed cost-effective model: DeepSeek V3, or first enabled model
+      if (!targetModelId) {
+        const deepseek =
+          this.modelRepo.getModelById('deepseek-v3') ||
+          this.modelRepo.listModels(true).find((m) => m.openrouter_model_id === 'deepseek/deepseek-chat');
+        if (deepseek && deepseek.enabled) {
+          targetModelId = deepseek.id;
+          selectionReason = 'Default high-performance cost-saving writing model (DeepSeek V3)';
+        } else {
+          const enabled = this.modelRepo.listModels(true);
+          if (enabled.length > 0) {
+            targetModelId = enabled[0].id;
+            selectionReason = `Default active model (${enabled[0].display_name})`;
+          } else {
+            targetModelId = 'deepseek-v3';
+            selectionReason = 'Default fallback model';
+          }
+        }
+      }
+    }
+
+    let modelRecord: ModelRecord | undefined;
+    if (targetModelId) {
+      modelRecord =
+        this.modelRepo.getModelById(targetModelId) ||
+        this.modelRepo.listModels(false).find((m) => m.openrouter_model_id === targetModelId);
+    }
+
+    if (!modelRecord) {
+      // If DeepSeek V3 is available by openrouter_model_id
+      modelRecord =
+        this.modelRepo.getModelById('deepseek-v3') ||
+        this.modelRepo.listModels(true)[0];
+
+      if (!modelRecord) {
+        modelRecord = {
+          id: targetModelId ?? 'custom-model',
+          openrouter_model_id: targetModelId ?? 'deepseek/deepseek-chat',
+          display_name: targetModelId ?? 'Custom Model',
+          provider: 'OpenRouter',
+          enabled: 1,
+          prompt_price_per_m: 0.14,
+          completion_price_per_m: 0.28,
+          created_at: new Date().toISOString(),
+        };
+      }
+    }
+
+    logger.info(`Direct writing delegation triggered via model: ${modelRecord.id} (${selectionReason})`);
+
+    const result = await this.openRouterService.generateOutput(
+      modelRecord,
+      params.prompt,
+      {
+        systemPrompt: params.systemPrompt,
+        temperature: params.temperature ?? 0.7,
+        maxTokens: params.maxTokens,
+      }
+    );
+
+    return {
+      text: result.outputText,
+      modelId: modelRecord.id,
+      modelName: modelRecord.display_name,
+      provider: modelRecord.provider,
+      latencyMs: result.latencyMs,
+      estimatedCostUsd: Number(result.estimatedCost.toFixed(6)),
+      tokensPrompt: result.promptTokens,
+      tokensCompletion: result.completionTokens,
+      selectionReason,
+    };
+  }
 }
+
