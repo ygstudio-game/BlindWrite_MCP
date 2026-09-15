@@ -9,6 +9,12 @@
 [![License](https://img.shields.io/badge/License-MIT-purple.svg)](#license)
  
 ---
+
+**Just want to install it?** See [`INSTALL.md`](./INSTALL.md) for step-by-step setup only.
+
+**Custom instructions to prevent Claude bypassing BlindWrite MCP?** See [`CLAUDE_PROMPT.md`](./CLAUDE_PROMPT.md) — paste it into Claude Desktop's Custom Instructions so drafting always delegates to `writer_generate`, even if skill routing fails.
+
+---
  
 ## 1. Problem & Purpose
  

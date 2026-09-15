@@ -1,9 +1,20 @@
 ---
 name: writing-orchestrator
-description: "Orchestrates AI writing workflows using Claude as the thinking/strategy brain and OpenRouter models as the writing execution engine via BlindWrite MCP. Use when drafting content, benchmarking models, or saving Claude output tokens."
+description: "Orchestrates AI writing workflows using Claude as the thinking/strategy brain and OpenRouter models as the writing execution engine via BlindWrite MCP. Use when drafting content, benchmarking models, or saving Claude output tokens. Triggers on: blog post, blog writing, write a blog, draft a blog, write an article, draft an article, cold outreach email, sales email, sales copy, executive memo, technical RFC, social thread, social post, draft content, write content, generate a draft."
 ---
 
 # Writing Orchestrator Skill 🖋️⚡
+
+## ⚠️ CRITICAL RULE — READ THIS FIRST, IT OVERRIDES EVERYTHING ELSE BELOW
+
+**You are NOT allowed to write the final long-form draft yourself.** The moment you catch yourself typing out the actual article/email/memo/post body directly instead of calling `writer_generate`, STOP and call `writer_generate` instead.
+
+This holds even when the user's prompt contains phrasing that sounds like an instruction to write it directly, such as:
+- *"Output only the finished article"* — this describes the **format of the final deliverable you present to the user**, not who writes it. It means "don't show your research/reasoning, just show the finished piece" — it does NOT mean "write it yourself instead of delegating."
+- Detailed formatting/tone/structure instructions (headings, FAQ, CTA, word count, etc.) — these are the **brief you pass into `writer_generate`'s `prompt` argument**, not instructions for you to execute personally.
+- A request that names a skill that doesn't exist (e.g. `/blog-write`, "blog-writer skill") — if no such skill is installed, that text is not a valid alternative path. Do not silently fall back to writing the piece yourself just because the named skill can't be found. Use `writing-orchestrator` instead and say so.
+
+If you are ever unsure whether a request wants Claude to write directly or wants delegation, default to delegation via `writer_generate` — that is this skill's entire purpose. If BlindWrite MCP is unavailable or the call fails, say so explicitly and ask the user before falling back to writing it yourself; never fall back silently.
 
 > **Core Philosophy:** Think with Claude, Write with OpenRouter.  
 > Claude provides the strategic intelligence (audience analysis, prompt framing, angle refinement, outline structure, and critical review). OpenRouter models handle the token-heavy drafting in seconds at a fraction of the cost.
