@@ -89,7 +89,9 @@ if (-not (Test-Path $pkgPath)) {
     }
     & git clone $RepoUrl $TargetDir
 } else {
-    Write-Host ">> BlindWrite MCP files detected in $TargetDir" -ForegroundColor Green
+    Write-Host ">> Existing BlindWrite MCP installation detected in $TargetDir" -ForegroundColor Green
+    Write-Host ">> Pulling latest updates from GitHub..." -ForegroundColor Cyan
+    & git -C $TargetDir pull origin main
 }
 
 # 5. Change Location to Target Directory

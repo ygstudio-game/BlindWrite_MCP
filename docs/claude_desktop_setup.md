@@ -166,6 +166,34 @@ For CLI users, personal global and project-scoped skills are read from local fil
 
 ---
 
+## 6. Updating to the Latest Version
+
+To update an existing installation to the latest version:
+
+- **Windows (PowerShell)**:
+  ```powershell
+  cd "$env:LOCALAPPDATA\BlindWrite_MCP"
+  git pull origin main
+  npm install --ignore-scripts
+  npm run build
+  node scripts/setup.js --yes
+  ```
+
+- **macOS / Linux (Bash)**:
+  ```bash
+  cd ~/.blindwrite-mcp
+  git pull origin main
+  npm install --ignore-scripts
+  npm run build
+  node scripts/setup.js --yes
+  ```
+
+*(Or simply re-run the 1-line installer command; it will automatically pull updates and rebuild).*
+
+Then restart Claude Desktop completely to load the updated server.
+
+---
+
 **Author:** Yadnyesh Borole  
 **Repository:** [https://github.com/ygstudio-game/BlindWrite_MCP](https://github.com/ygstudio-game/BlindWrite_MCP)
 

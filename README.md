@@ -214,6 +214,47 @@ The interactive wizard will automatically resolve exact paths and update Claude 
 
 ---
 
+### 🔄 How to Update BlindWrite MCP
+
+To update your existing installation to the latest version:
+
+#### Method 1: Re-run the 1-Line Remote Installer (Fastest)
+Simply re-run the 1-line command in your terminal. It will automatically detect your existing installation, pull the latest updates from GitHub, and rebuild:
+- **Windows (PowerShell):**
+  ```powershell
+  irm https://raw.githubusercontent.com/ygstudio-game/BlindWrite_MCP/main/scripts/install.ps1 | iex
+  ```
+- **macOS / Linux (Bash):**
+  ```bash
+  curl -fsSL https://raw.githubusercontent.com/ygstudio-game/BlindWrite_MCP/main/scripts/install.sh | bash
+  ```
+
+#### Method 2: Terminal Update
+Navigate to your installation directory and pull the latest code:
+- **Windows (PowerShell):**
+  ```powershell
+  cd "$env:LOCALAPPDATA\BlindWrite_MCP"
+  git pull origin main
+  npm install --ignore-scripts
+  npm run build
+  node scripts/setup.js --yes
+  ```
+- **macOS / Linux (Bash):**
+  ```bash
+  cd ~/.blindwrite-mcp
+  git pull origin main
+  npm install --ignore-scripts
+  npm run build
+  node scripts/setup.js --yes
+  ```
+*(If you cloned into a custom directory, run `git pull origin main && npm run build` inside that folder).*
+
+#### After Updating:
+1. **Restart Claude Desktop**: Completely quit Claude Desktop (Right-click tray icon → Quit) and reopen it.
+2. **Skill Update (Optional)**: In Claude Desktop (**Customize > Skills**), re-upload [**`writing-orchestrator.zip`**](https://github.com/ygstudio-game/BlindWrite_MCP/raw/main/skills/writing-orchestrator.zip) or `SKILL.md` to refresh your account skill.
+
+---
+
 ## 6. Claude Desktop Configuration (Manual)
 
 If you prefer to configure Claude Desktop manually instead of using `npm run setup`:
