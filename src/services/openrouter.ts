@@ -14,7 +14,8 @@ export class OpenRouterService {
     prompt: string,
     options: GenerationOptions = {}
   ): Promise<GenerationResult> {
-    const timeoutMs = options.timeoutMs ?? 60_000;
+    const timeoutMs =
+      options.timeoutMs ?? Math.max(180_000, (options.maxTokens ?? 2000) * 60);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
 

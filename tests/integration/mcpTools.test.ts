@@ -36,7 +36,7 @@ describe('MCP Tools Integration', () => {
     expect(task.id).toBeDefined();
 
     const models = benchmarkService.listModels();
-    expect(models.length).toBeGreaterThanOrEqual(6);
+    expect(models.length).toBeGreaterThanOrEqual(4);
 
     const duelTask = benchmarkService.createTask({
       title: 'Duel',

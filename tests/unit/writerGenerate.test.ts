@@ -44,23 +44,23 @@ describe('WriterGenerate and directWrite', () => {
     expect(result.selectionReason).toContain('Explicitly specified');
   });
 
-  it('defaults to cost-saving DeepSeek Flash when no model is specified and no rankings exist', async () => {
+  it('defaults to cost-saving GLM 5.2 Free when no model is specified and no rankings exist', async () => {
     vi.spyOn(service.openRouterService, 'generateOutput').mockResolvedValue({
-      modelId: 'deepseek-v4-1-flash',
+      modelId: 'glm-5-2-free',
       outputText: 'Draft content generated at super low cost.',
       promptTokens: 30,
       completionTokens: 80,
       totalTokens: 110,
       latencyMs: 450,
-      estimatedCost: 0.000026,
+      estimatedCost: 0.0,
     });
 
     const result = await service.directWrite({
       prompt: 'Summarize our key value propositions.',
     });
 
-    expect(result.modelId).toBe('deepseek-v4-1-flash');
-    expect(result.selectionReason).toContain('DeepSeek V4.1 Flash');
+    expect(result.modelId).toBe('glm-5-2-free');
+    expect(result.selectionReason).toContain('GLM 5.2 (Free)');
     expect(result.tokensCompletion).toBe(80);
   });
 

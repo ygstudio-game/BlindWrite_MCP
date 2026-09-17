@@ -3,40 +3,13 @@ import { logger } from '../utils/logger.js';
 
 export const SEED_MODELS = [
   {
-    id: 'claude-3-5-sonnet',
-    openrouter_model_id: 'anthropic/claude-3.5-sonnet',
-    display_name: 'Claude 3.5 Sonnet',
-    provider: 'Anthropic',
+    id: 'glm-5-2-free',
+    openrouter_model_id: 'z-ai/glm-5.2:free',
+    display_name: 'GLM 5.2 (Free)',
+    provider: 'Z-AI',
     enabled: 1,
-    prompt_price_per_m: 3.0,
-    completion_price_per_m: 15.0,
-  },
-  {
-    id: 'gpt-4o',
-    openrouter_model_id: 'openai/gpt-4o',
-    display_name: 'GPT-4o',
-    provider: 'OpenAI',
-    enabled: 1,
-    prompt_price_per_m: 2.5,
-    completion_price_per_m: 10.0,
-  },
-  {
-    id: 'gemini-1-5-pro',
-    openrouter_model_id: 'google/gemini-pro-1.5',
-    display_name: 'Gemini 1.5 Pro',
-    provider: 'Google',
-    enabled: 1,
-    prompt_price_per_m: 1.25,
-    completion_price_per_m: 5.0,
-  },
-  {
-    id: 'deepseek-v4-1-flash',
-    openrouter_model_id: 'deepseek/deepseek-v4.1-flash',
-    display_name: 'DeepSeek V4.1 Flash',
-    provider: 'DeepSeek',
-    enabled: 1,
-    prompt_price_per_m: 0.14,
-    completion_price_per_m: 0.28,
+    prompt_price_per_m: 0.0,
+    completion_price_per_m: 0.0,
   },
   {
     id: 'glm-5-3',
@@ -57,11 +30,47 @@ export const SEED_MODELS = [
     completion_price_per_m: 0.28,
   },
   {
+    id: 'deepseek-v4-1-flash',
+    openrouter_model_id: 'deepseek/deepseek-v4.1-flash',
+    display_name: 'DeepSeek V4.1 Flash',
+    provider: 'DeepSeek',
+    enabled: 1,
+    prompt_price_per_m: 0.14,
+    completion_price_per_m: 0.28,
+  },
+  {
+    id: 'claude-3-5-sonnet',
+    openrouter_model_id: 'anthropic/claude-3.5-sonnet',
+    display_name: 'Claude 3.5 Sonnet',
+    provider: 'Anthropic',
+    enabled: 0,
+    prompt_price_per_m: 3.0,
+    completion_price_per_m: 15.0,
+  },
+  {
+    id: 'gpt-4o',
+    openrouter_model_id: 'openai/gpt-4o',
+    display_name: 'GPT-4o',
+    provider: 'OpenAI',
+    enabled: 0,
+    prompt_price_per_m: 2.5,
+    completion_price_per_m: 10.0,
+  },
+  {
+    id: 'gemini-1-5-pro',
+    openrouter_model_id: 'google/gemini-pro-1.5',
+    display_name: 'Gemini 1.5 Pro',
+    provider: 'Google',
+    enabled: 0,
+    prompt_price_per_m: 1.25,
+    completion_price_per_m: 5.0,
+  },
+  {
     id: 'llama-3-3-70b',
     openrouter_model_id: 'meta-llama/llama-3.3-70b-instruct',
     display_name: 'Llama 3.3 70B Instruct',
     provider: 'Meta',
-    enabled: 1,
+    enabled: 0,
     prompt_price_per_m: 0.12,
     completion_price_per_m: 0.3,
   },
@@ -70,7 +79,7 @@ export const SEED_MODELS = [
     openrouter_model_id: 'qwen/qwen-2.5-72b-instruct',
     display_name: 'Qwen 2.5 72B Instruct',
     provider: 'Qwen',
-    enabled: 1,
+    enabled: 0,
     prompt_price_per_m: 0.35,
     completion_price_per_m: 0.4,
   },
@@ -203,6 +212,11 @@ export function runMigrations(db: Database.Database): void {
     }
   });
   tx(SEED_MODELS);
+
+  // 4. Disable any legacy models that are not GLM or DeepSeek
+  db.prepare(`
+    UPDATE models SET enabled = 0 WHERE openrouter_model_id NOT LIKE 'z-ai/%' AND openrouter_model_id NOT LIKE 'deepseek/%'
+  `).run();
 
   logger.info('Database migrations and seeds successfully executed');
 }

@@ -723,23 +723,25 @@ export class BenchmarkService {
         }
       }
 
-      // 3. Fallback to default high-speed cost-effective model: DeepSeek Flash, DeepSeek V3, or first enabled model
+      // 3. Fallback to default high-speed cost-effective model: GLM 5.2 (Free), DeepSeek Flash, DeepSeek V3, or first enabled model
       if (!targetModelId) {
         const defaultModel =
+          this.modelRepo.getModelById('glm-5-2-free') ||
+          this.modelRepo.listModels(true).find((m) => m.openrouter_model_id === 'z-ai/glm-5.2:free') ||
           this.modelRepo.getModelById('deepseek-v4-1-flash') ||
           this.modelRepo.listModels(true).find((m) => m.openrouter_model_id === 'deepseek/deepseek-v4.1-flash') ||
           this.modelRepo.getModelById('deepseek-v3') ||
           this.modelRepo.listModels(true).find((m) => m.openrouter_model_id === 'deepseek/deepseek-chat');
         if (defaultModel && defaultModel.enabled) {
           targetModelId = defaultModel.id;
-          selectionReason = `Default high-performance cost-saving writing model (${defaultModel.display_name})`;
+          selectionReason = `Default cost-saving writing model (${defaultModel.display_name})`;
         } else {
           const enabled = this.modelRepo.listModels(true);
           if (enabled.length > 0) {
             targetModelId = enabled[0].id;
             selectionReason = `Default active model (${enabled[0].display_name})`;
           } else {
-            targetModelId = 'deepseek-v4-1-flash';
+            targetModelId = 'glm-5-2-free';
             selectionReason = 'Default fallback model';
           }
         }

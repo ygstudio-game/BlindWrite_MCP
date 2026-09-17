@@ -24,10 +24,11 @@ describe('Database & Repositories', () => {
   it('runs migrations and seeds default models and user', () => {
     const modelRepo = new ModelRepository(db);
     const models = modelRepo.listModels();
-    expect(models.length).toBeGreaterThanOrEqual(6);
-    expect(models.some(m => m.id === 'claude-3-5-sonnet')).toBe(true);
-    expect(models.some(m => m.id === 'gpt-4o')).toBe(true);
+    expect(models.length).toBeGreaterThanOrEqual(4);
+    expect(models.some(m => m.id === 'glm-5-2-free')).toBe(true);
+    expect(models.some(m => m.id === 'glm-5-3')).toBe(true);
     expect(models.some(m => m.id === 'deepseek-v3')).toBe(true);
+    expect(models.some(m => m.id === 'deepseek-v4-1-flash')).toBe(true);
   });
 
   it('creates and retrieves a benchmark task', () => {
