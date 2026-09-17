@@ -44,9 +44,9 @@ describe('WriterGenerate and directWrite', () => {
     expect(result.selectionReason).toContain('Explicitly specified');
   });
 
-  it('defaults to cost-saving DeepSeek V3 when no model is specified and no rankings exist', async () => {
+  it('defaults to cost-saving DeepSeek Flash when no model is specified and no rankings exist', async () => {
     vi.spyOn(service.openRouterService, 'generateOutput').mockResolvedValue({
-      modelId: 'deepseek-v3',
+      modelId: 'deepseek-v4-1-flash',
       outputText: 'Draft content generated at super low cost.',
       promptTokens: 30,
       completionTokens: 80,
@@ -59,9 +59,30 @@ describe('WriterGenerate and directWrite', () => {
       prompt: 'Summarize our key value propositions.',
     });
 
-    expect(result.modelId).toBe('deepseek-v3');
-    expect(result.selectionReason).toContain('DeepSeek V3');
+    expect(result.modelId).toBe('deepseek-v4-1-flash');
+    expect(result.selectionReason).toContain('DeepSeek V4.1 Flash');
     expect(result.tokensCompletion).toBe(80);
+  });
+
+  it('delegates writing to GLM 5.3 when explicitly requested', async () => {
+    vi.spyOn(service.openRouterService, 'generateOutput').mockResolvedValue({
+      modelId: 'glm-5-3',
+      outputText: 'High quality in-depth content from GLM 5.3.',
+      promptTokens: 50,
+      completionTokens: 150,
+      totalTokens: 200,
+      latencyMs: 1100,
+      estimatedCost: 0.00035,
+    });
+
+    const result = await service.directWrite({
+      prompt: 'Write an authoritative technical whitepaper section.',
+      modelId: 'z-ai/glm-5.3',
+    });
+
+    expect(result.modelId).toBe('glm-5-3');
+    expect(result.text).toContain('GLM 5.3');
+    expect(result.selectionReason).toContain('Explicitly specified');
   });
 
   it('picks personal #1 ranked model for category when available', async () => {

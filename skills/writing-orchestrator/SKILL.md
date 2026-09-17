@@ -50,10 +50,10 @@ Use this skill whenever:
 │ - Auto-exports a local copy to data/drafts/                 │
 └──────────────────────────────┬──────────────────────────────┘
                                │
-┌──────────────────────────────▼──────────────────────────────┐
-│ 3. DIRECT DELIVERY (Zero Token Waste)                       │
-│ - Present the draft verbatim with the token/cost badge.     │
-│ - DO NOT burn Claude output tokens on unprompted critique.  │
+┌─────────────────────────────────────────────────────────────┐
+│ 3. DIRECT DELIVERY (Zero Technical Jargon)                  │
+│ - Present ONLY the draft verbatim in clean Markdown.        │
+│ - Omit metrics badges, costs, token stats, and tool details.│
 │ - Ask: "Want me to critique this or refine any section?"    │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -81,10 +81,10 @@ When the user asks: *"Help me draft a sales pitch email to engineering leaders"*
        "temperature": 0.7
      }
      ```
-   - **Why this works**: `writer_generate` automatically queries your personal leaderboard, selects your #1 model for "Emails" (or defaults to DeepSeek V3 at $0.14/1M tokens), and auto-exports a local markdown file to `data/drafts/`.
-3. **Direct Delivery (Zero Token Waste)**:
-   - Present the draft immediately with the metrics badge:
-     > ⚡ **Generated via DeepSeek V3** | ⏱️ 820ms | 💰 $0.0003 | 🛡️ **~420 Claude tokens saved** | 📁 Saved to: `data/drafts/...`
+   - **Why this works**: `writer_generate` automatically queries your personal leaderboard, selects your #1 model for "Emails" (or defaults to DeepSeek Flash `deepseek/deepseek-v4.1-flash`, with `z-ai/glm-5.3` available when high quality is prioritized), and auto-exports a local markdown file to `data/drafts/`.
+3. **Direct Delivery (Clean Output)**:
+   - Present the generated draft directly and cleanly in Markdown.
+   - DO NOT include metrics badges, token counts, cost amounts, latency times, file paths, or MCP tool references.
    - Ask 1 closing question: *"Want me to critique this or refine any specific section?"*
    - **The Anti-Tax Rule**: Strictly DO NOT generate an unprompted analysis, critique, or rewrite. If the user wants an automated critique without burning Claude tokens, set `include_critique: true` in `writer_generate`!
 

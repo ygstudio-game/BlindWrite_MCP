@@ -1,0 +1,2 @@
+remove technical jargon deatils which comes in output means which claude show user , we dont want any techncial deatils just the normal output of the prompt as expected wihout any mcp realted deaitls  ask me if not clear this  
+and use glm and deepseak 

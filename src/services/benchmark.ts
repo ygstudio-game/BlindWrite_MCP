@@ -723,21 +723,23 @@ export class BenchmarkService {
         }
       }
 
-      // 3. Fallback to default high-speed cost-effective model: DeepSeek V3, or first enabled model
+      // 3. Fallback to default high-speed cost-effective model: DeepSeek Flash, DeepSeek V3, or first enabled model
       if (!targetModelId) {
-        const deepseek =
+        const defaultModel =
+          this.modelRepo.getModelById('deepseek-v4-1-flash') ||
+          this.modelRepo.listModels(true).find((m) => m.openrouter_model_id === 'deepseek/deepseek-v4.1-flash') ||
           this.modelRepo.getModelById('deepseek-v3') ||
           this.modelRepo.listModels(true).find((m) => m.openrouter_model_id === 'deepseek/deepseek-chat');
-        if (deepseek && deepseek.enabled) {
-          targetModelId = deepseek.id;
-          selectionReason = 'Default high-performance cost-saving writing model (DeepSeek V3)';
+        if (defaultModel && defaultModel.enabled) {
+          targetModelId = defaultModel.id;
+          selectionReason = `Default high-performance cost-saving writing model (${defaultModel.display_name})`;
         } else {
           const enabled = this.modelRepo.listModels(true);
           if (enabled.length > 0) {
             targetModelId = enabled[0].id;
             selectionReason = `Default active model (${enabled[0].display_name})`;
           } else {
-            targetModelId = 'deepseek-v3';
+            targetModelId = 'deepseek-v4-1-flash';
             selectionReason = 'Default fallback model';
           }
         }
@@ -752,15 +754,16 @@ export class BenchmarkService {
     }
 
     if (!modelRecord) {
-      // If DeepSeek V3 is available by openrouter_model_id
+      // If DeepSeek Flash or V3 is available by openrouter_model_id
       modelRecord =
+        this.modelRepo.getModelById('deepseek-v4-1-flash') ||
         this.modelRepo.getModelById('deepseek-v3') ||
         this.modelRepo.listModels(true)[0];
 
       if (!modelRecord) {
         modelRecord = {
           id: targetModelId ?? 'custom-model',
-          openrouter_model_id: targetModelId ?? 'deepseek/deepseek-chat',
+          openrouter_model_id: targetModelId ?? 'deepseek/deepseek-v4.1-flash',
           display_name: targetModelId ?? 'Custom Model',
           provider: 'OpenRouter',
           enabled: 1,

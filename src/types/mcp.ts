@@ -67,7 +67,7 @@ export const WriterGenerateSchema = z.object({
   prompt: z.string().min(1).describe('The writing prompt crafted by Claude after thinking/outlining'),
   system_prompt: z.string().optional().describe('Optional system prompt defining voice, tone, or style guidelines'),
   category: z.string().optional().describe('Optional writing category (e.g. "Emails", "Creative Writing", "Technical Writing") used to pick the top-ranked model from your personal leaderboard'),
-  model_id: z.string().optional().describe('Optional specific OpenRouter model ID (e.g. "deepseek/deepseek-chat", "openai/gpt-4o", "anthropic/claude-3.5-sonnet"). Defaults to your #1 ranked model or DeepSeek V3.'),
+  model_id: z.string().optional().describe('Optional specific OpenRouter model ID (e.g. "deepseek/deepseek-v4.1-flash", "z-ai/glm-5.3", "deepseek/deepseek-chat"). Defaults to your #1 ranked model or DeepSeek Flash.'),
   include_critique: z.boolean().optional().default(false).describe('If true, instructs the model to include a 3-bullet self-critique and alternative angles directly in the output, saving Claude tokens'),
   export_file: z.boolean().optional().default(true).describe('Save a local copy of this draft to data/drafts/*.md (default true)'),
   temperature: z.number().min(0).max(2).optional().default(0.7).describe('Sampling temperature'),

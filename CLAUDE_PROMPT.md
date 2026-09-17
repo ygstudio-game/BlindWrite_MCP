@@ -28,22 +28,21 @@ WHEN ASKED TO WRITE ANY CONTENT (Cold emails, essays, sales pitches, blog posts,
 2. STEP 2: DELEGATE THE WRITING VIA BLINDWRITE MCP
    - Daily Work (Fast & Token-Saving):
      Call `writer_generate` with the crafted prompt and category (e.g. category: "Emails" or "Business Writing").
-     It automatically uses my personal #1 ranked model for that category, or defaults to ultra-cheap DeepSeek V3 ($0.14/1M tokens).
+     It automatically uses my personal #1 ranked model for that category, or defaults to cost-effective DeepSeek Flash (`deepseek/deepseek-v4.1-flash`), or GLM 5.3 (`z-ai/glm-5.3`) when quality takes priority.
    - Benchmark / Blind Duel (When testing or exploring style):
      If I ask to "benchmark", "compare models", or for high-stakes creative work, call `benchmark_create_task` -> `benchmark_generate_outputs` -> `benchmark_start_duel`.
      Present the blind A/B outputs for me to vote and update my personal leaderboard.
 
-3. STEP 3: DIRECT DELIVERY (ZERO TOKEN WASTE)
-   - Once the draft returns from OpenRouter, deliver it directly to me with the metrics badge:
-     > ⚡ Drafted via [Model] | Cost: $[Cost] | Tokens Saved: ~[Count] | Saved to: data/drafts/...
-   - End with a single prompt: "Want me to critique this or refine any section?"
-   - ANTI-TAX RULE: Do NOT generate an unprompted analysis, critique, or rewrite. Preserve output tokens.
-   - If I want an automated critique, pass `include_critique: true` to `writer_generate` so OpenRouter does it cheaply ($0.0004) without consuming Claude tokens.
+3. STEP 3: DIRECT DELIVERY (CLEAN USER OUTPUT)
+   - Once the draft returns from OpenRouter, deliver ONLY the generated draft directly to me as clean Markdown.
+   - DO NOT include any metrics badges, token counts, cost estimations, latency, file paths, or MCP tool references.
+   - ANTI-TAX RULE: Do NOT generate an unprompted analysis, critique, or rewrite. Keep output completely free of technical jargon.
+   - If I want an automated critique, pass `include_critique: true` to `writer_generate` so OpenRouter handles it cheaply without consuming Claude tokens.
 ```
 
 ---
 
 ### Why This Workflow is 100x Better
-1. **Token Savings**: Generating a 1,500-word draft via Claude consumes thousands of Claude output tokens. Delegating it to DeepSeek V3 costs ~$0.0003 and consumes zero Claude generation tokens.
-2. **Speed**: OpenRouter frontier models generate multi-paragraph drafts in 1-3 seconds.
-3. **Personalized Quality**: The more you benchmark in BlindWrite, the smarter `writer_generate` becomes at automatically choosing the model you objectively prefer for each category.
+1. **Token Savings**: Generating a 1,500-word draft via Claude consumes thousands of Claude output tokens. Delegating it to DeepSeek Flash costs fractions of a cent and consumes zero Claude generation tokens.
+2. **Speed**: OpenRouter models generate multi-paragraph drafts in seconds.
+3. **Personalized Quality**: The more you benchmark in BlindWrite, the smarter `writer_generate` becomes at automatically choosing the model you objectively prefer for each category (such as DeepSeek Flash or GLM 5.3).
