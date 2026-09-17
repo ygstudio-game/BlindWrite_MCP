@@ -30,7 +30,7 @@ describe('Benchmark Orchestration Service', () => {
     expect(task.category).toBe('Emails');
 
     const models = service.listModels();
-    expect(models.length).toBeGreaterThanOrEqual(4);
+    expect(models.length).toBeGreaterThanOrEqual(2);
   });
 
   it('generates outputs in parallel and masks model identities with anonymous IDs', async () => {

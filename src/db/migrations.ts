@@ -3,15 +3,6 @@ import { logger } from '../utils/logger.js';
 
 export const SEED_MODELS = [
   {
-    id: 'glm-5-2-free',
-    openrouter_model_id: 'z-ai/glm-5.2:free',
-    display_name: 'GLM 5.2 (Free)',
-    provider: 'Z-AI',
-    enabled: 1,
-    prompt_price_per_m: 0.0,
-    completion_price_per_m: 0.0,
-  },
-  {
     id: 'glm-5-3',
     openrouter_model_id: 'z-ai/glm-5.3',
     display_name: 'GLM 5.3',
@@ -21,20 +12,29 @@ export const SEED_MODELS = [
     completion_price_per_m: 2.0,
   },
   {
-    id: 'deepseek-v3',
-    openrouter_model_id: 'deepseek/deepseek-chat',
-    display_name: 'DeepSeek V3',
+    id: 'deepseek-v4-1-flash',
+    openrouter_model_id: 'deepseek/deepseek-v4.1-flash',
+    display_name: 'DeepSeek V4.1 Flash',
     provider: 'DeepSeek',
     enabled: 1,
     prompt_price_per_m: 0.14,
     completion_price_per_m: 0.28,
   },
   {
-    id: 'deepseek-v4-1-flash',
-    openrouter_model_id: 'deepseek/deepseek-v4.1-flash',
-    display_name: 'DeepSeek V4.1 Flash',
+    id: 'glm-5-2-free',
+    openrouter_model_id: 'z-ai/glm-5.2:free',
+    display_name: 'GLM 5.2 (Free)',
+    provider: 'Z-AI',
+    enabled: 0,
+    prompt_price_per_m: 0.0,
+    completion_price_per_m: 0.0,
+  },
+  {
+    id: 'deepseek-v3',
+    openrouter_model_id: 'deepseek/deepseek-chat',
+    display_name: 'DeepSeek V3',
     provider: 'DeepSeek',
-    enabled: 1,
+    enabled: 0,
     prompt_price_per_m: 0.14,
     completion_price_per_m: 0.28,
   },
@@ -213,9 +213,12 @@ export function runMigrations(db: Database.Database): void {
   });
   tx(SEED_MODELS);
 
-  // 4. Disable any legacy models that are not GLM or DeepSeek
+  // 4. Ensure only GLM 5.3 and DeepSeek Flash are enabled
   db.prepare(`
-    UPDATE models SET enabled = 0 WHERE openrouter_model_id NOT LIKE 'z-ai/%' AND openrouter_model_id NOT LIKE 'deepseek/%'
+    UPDATE models SET enabled = 0 WHERE id NOT IN ('glm-5-3', 'deepseek-v4-1-flash')
+  `).run();
+  db.prepare(`
+    UPDATE models SET enabled = 1 WHERE id IN ('glm-5-3', 'deepseek-v4-1-flash')
   `).run();
 
   logger.info('Database migrations and seeds successfully executed');
