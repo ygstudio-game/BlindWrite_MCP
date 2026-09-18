@@ -234,7 +234,8 @@ Navigate to your installation directory and pull the latest code:
 - **Windows (PowerShell):**
   ```powershell
   cd "$env:LOCALAPPDATA\BlindWrite_MCP"
-  git pull origin main
+  git fetch origin main
+  git reset --hard origin/main
   npm install --ignore-scripts
   npm run build
   node scripts/setup.js --yes
@@ -242,7 +243,8 @@ Navigate to your installation directory and pull the latest code:
 - **macOS / Linux (Bash):**
   ```bash
   cd ~/.blindwrite-mcp
-  git pull origin main
+  git fetch origin main
+  git reset --hard origin/main
   npm install --ignore-scripts
   npm run build
   node scripts/setup.js --yes

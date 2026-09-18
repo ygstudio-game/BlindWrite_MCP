@@ -49,7 +49,14 @@ if [ ! -f "$TARGET_DIR/package.json" ]; then
 else
     echo "[+] Existing BlindWrite MCP installation detected in $TARGET_DIR"
     echo "[*] Pulling latest updates from GitHub..."
-    git -C "$TARGET_DIR" pull origin main
+    DEFAULT_INSTALL_DIR="$HOME/.blindwrite-mcp"
+    if [ "$TARGET_DIR" = "$DEFAULT_INSTALL_DIR" ]; then
+        git -C "$TARGET_DIR" fetch origin main
+        git -C "$TARGET_DIR" reset --hard origin/main
+    else
+        git -C "$TARGET_DIR" checkout -- skills/writing-orchestrator.zip .claude/skills/writing-orchestrator/SKILL.md package-lock.json 2>/dev/null || true
+        git -C "$TARGET_DIR" pull origin main
+    fi
 fi
 
 cd "$TARGET_DIR"

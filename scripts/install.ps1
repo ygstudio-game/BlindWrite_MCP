@@ -91,7 +91,25 @@ if (-not (Test-Path $pkgPath)) {
 } else {
     Write-Host ">> Existing BlindWrite MCP installation detected in $TargetDir" -ForegroundColor Green
     Write-Host ">> Pulling latest updates from GitHub..." -ForegroundColor Cyan
-    & git -C $TargetDir pull origin main
+
+    $DefaultInstallDir = Join-Path $localAppData "BlindWrite_MCP"
+    $IsManagedDir = ($TargetDir -eq $DefaultInstallDir) -or `
+                    ((Test-Path $DefaultInstallDir) -and ((Get-Item $TargetDir).FullName -eq (Get-Item $DefaultInstallDir).FullName))
+
+    if ($IsManagedDir) {
+        # Dedicated installation directory: cleanly synchronize tracked files with origin/main
+        & git -C $TargetDir fetch origin main
+        & git -C $TargetDir reset --hard origin/main
+    } else {
+        # Development / working copy: revert auto-generated artifacts before pulling to avoid merge conflicts
+        & git -C $TargetDir checkout -- skills/writing-orchestrator.zip .claude/skills/writing-orchestrator/SKILL.md package-lock.json 2>$null
+        & git -C $TargetDir pull origin main
+    }
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Failed to update repository from GitHub." -ForegroundColor Red
+        exit 1
+    }
 }
 
 # 5. Change Location to Target Directory

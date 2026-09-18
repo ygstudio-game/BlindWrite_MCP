@@ -173,7 +173,8 @@ To update an existing installation to the latest version:
 - **Windows (PowerShell)**:
   ```powershell
   cd "$env:LOCALAPPDATA\BlindWrite_MCP"
-  git pull origin main
+  git fetch origin main
+  git reset --hard origin/main
   npm install --ignore-scripts
   npm run build
   node scripts/setup.js --yes
@@ -182,7 +183,8 @@ To update an existing installation to the latest version:
 - **macOS / Linux (Bash)**:
   ```bash
   cd ~/.blindwrite-mcp
-  git pull origin main
+  git fetch origin main
+  git reset --hard origin/main
   npm install --ignore-scripts
   npm run build
   node scripts/setup.js --yes
