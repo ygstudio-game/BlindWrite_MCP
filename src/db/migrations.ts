@@ -1,6 +1,10 @@
 import type Database from 'better-sqlite3';
 import { logger } from '../utils/logger.js';
 
+// Pricing sourced from OpenRouter model pages on 2026-09-14.
+// GLM 5.3: https://openrouter.ai/z-ai/glm-5.3
+// DeepSeek V4.1 Flash: https://openrouter.ai/deepseek/deepseek-v4.1-flash
+// Re-verify against OpenRouter if more than 30 days have passed since above date.
 export const SEED_MODELS = [
   {
     id: 'glm-5-3',
@@ -8,8 +12,8 @@ export const SEED_MODELS = [
     display_name: 'GLM 5.3',
     provider: 'Z-AI',
     enabled: 1,
-    prompt_price_per_m: 1.0,
-    completion_price_per_m: 2.0,
+    prompt_price_per_m: 0.936,
+    completion_price_per_m: 3.168,
   },
   {
     id: 'deepseek-v4-1-flash',
@@ -17,71 +21,8 @@ export const SEED_MODELS = [
     display_name: 'DeepSeek V4.1 Flash',
     provider: 'DeepSeek',
     enabled: 1,
-    prompt_price_per_m: 0.14,
-    completion_price_per_m: 0.28,
-  },
-  {
-    id: 'glm-5-2-free',
-    openrouter_model_id: 'z-ai/glm-5.2:free',
-    display_name: 'GLM 5.2 (Free)',
-    provider: 'Z-AI',
-    enabled: 0,
-    prompt_price_per_m: 0.0,
-    completion_price_per_m: 0.0,
-  },
-  {
-    id: 'deepseek-v3',
-    openrouter_model_id: 'deepseek/deepseek-chat',
-    display_name: 'DeepSeek V3',
-    provider: 'DeepSeek',
-    enabled: 0,
-    prompt_price_per_m: 0.14,
-    completion_price_per_m: 0.28,
-  },
-  {
-    id: 'claude-3-5-sonnet',
-    openrouter_model_id: 'anthropic/claude-3.5-sonnet',
-    display_name: 'Claude 3.5 Sonnet',
-    provider: 'Anthropic',
-    enabled: 0,
-    prompt_price_per_m: 3.0,
-    completion_price_per_m: 15.0,
-  },
-  {
-    id: 'gpt-4o',
-    openrouter_model_id: 'openai/gpt-4o',
-    display_name: 'GPT-4o',
-    provider: 'OpenAI',
-    enabled: 0,
-    prompt_price_per_m: 2.5,
-    completion_price_per_m: 10.0,
-  },
-  {
-    id: 'gemini-1-5-pro',
-    openrouter_model_id: 'google/gemini-pro-1.5',
-    display_name: 'Gemini 1.5 Pro',
-    provider: 'Google',
-    enabled: 0,
-    prompt_price_per_m: 1.25,
-    completion_price_per_m: 5.0,
-  },
-  {
-    id: 'llama-3-3-70b',
-    openrouter_model_id: 'meta-llama/llama-3.3-70b-instruct',
-    display_name: 'Llama 3.3 70B Instruct',
-    provider: 'Meta',
-    enabled: 0,
-    prompt_price_per_m: 0.12,
-    completion_price_per_m: 0.3,
-  },
-  {
-    id: 'qwen-2-5-72b',
-    openrouter_model_id: 'qwen/qwen-2.5-72b-instruct',
-    display_name: 'Qwen 2.5 72B Instruct',
-    provider: 'Qwen',
-    enabled: 0,
-    prompt_price_per_m: 0.35,
-    completion_price_per_m: 0.4,
+    prompt_price_per_m: 0.15,
+    completion_price_per_m: 0.60,
   },
 ];
 
@@ -213,12 +154,34 @@ export function runMigrations(db: Database.Database): void {
   });
   tx(SEED_MODELS);
 
-  // 4. Ensure only GLM 5.3 and DeepSeek Flash are enabled
-  db.prepare(`
-    UPDATE models SET enabled = 0 WHERE id NOT IN ('glm-5-3', 'deepseek-v4-1-flash')
-  `).run();
+  // 4. Ensure only GLM 5.3 and DeepSeek Flash exist and are enabled.
+  // Try to delete legacy models; fall back to disabling them if FK constraints prevent deletion.
+  try {
+    db.prepare(`
+      DELETE FROM models WHERE id NOT IN ('glm-5-3', 'deepseek-v4-1-flash')
+    `).run();
+  } catch {
+    db.prepare(`
+      UPDATE models SET enabled = 0 WHERE id NOT IN ('glm-5-3', 'deepseek-v4-1-flash')
+    `).run();
+  }
   db.prepare(`
     UPDATE models SET enabled = 1 WHERE id IN ('glm-5-3', 'deepseek-v4-1-flash')
+  `).run();
+
+  // 5. Fix pricing on already-seeded rows (INSERT OR IGNORE won't update existing rows).
+  // Keep this block in sync with SEED_MODELS above whenever pricing changes.
+  db.prepare(`
+    UPDATE models
+    SET prompt_price_per_m = 0.936, completion_price_per_m = 3.168
+    WHERE id = 'glm-5-3'
+      AND (prompt_price_per_m != 0.936 OR completion_price_per_m != 3.168)
+  `).run();
+  db.prepare(`
+    UPDATE models
+    SET prompt_price_per_m = 0.15, completion_price_per_m = 0.60
+    WHERE id = 'deepseek-v4-1-flash'
+      AND (prompt_price_per_m != 0.15 OR completion_price_per_m != 0.60)
   `).run();
 
   logger.info('Database migrations and seeds successfully executed');

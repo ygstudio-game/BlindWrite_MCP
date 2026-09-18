@@ -74,16 +74,16 @@ describe('Cryptographic Randomization & Duel Service', () => {
 
     const out1 = outputRepo.createOutput({
       taskId: task.id,
-      modelId: 'claude-3-5-sonnet',
+      modelId: 'glm-5-3',
       anonymousId: 'anon_alpha',
-      outputText: 'Apology text from Claude.',
+      outputText: 'Apology text from Model Alpha.',
     });
 
     const out2 = outputRepo.createOutput({
       taskId: task.id,
-      modelId: 'gpt-4o',
+      modelId: 'deepseek-v4-1-flash',
       anonymousId: 'anon_beta',
-      outputText: 'Apology text from GPT.',
+      outputText: 'Apology text from Model Beta.',
     });
 
     const duel = duelService.createDuel(task.id);
@@ -99,9 +99,9 @@ describe('Cryptographic Randomization & Duel Service', () => {
 
     // Verify STRICT blindness: no model_id or provider leaks in response
     const duelJson = JSON.stringify(duel);
-    expect(duelJson).not.toContain('claude-3-5-sonnet');
-    expect(duelJson).not.toContain('gpt-4o');
-    expect(duelJson).not.toContain('Anthropic');
-    expect(duelJson).not.toContain('OpenAI');
+    expect(duelJson).not.toContain('glm-5-3');
+    expect(duelJson).not.toContain('deepseek-v4-1-flash');
+    expect(duelJson).not.toContain('Z-AI');
+    expect(duelJson).not.toContain('DeepSeek');
   });
 });

@@ -52,17 +52,17 @@ describe('Preference Analytics Service', () => {
       prompt: 'Write a cold pitch email.',
     });
 
-    // Short concise output (Claude) vs verbose output (GPT)
+    // Short concise output (GLM) vs verbose output (DeepSeek)
     const shortOutput = outputRepo.createOutput({
       taskId: task.id,
-      modelId: 'claude-3-5-sonnet',
+      modelId: 'glm-5-3',
       anonymousId: 'anon_short',
       outputText: 'Short concise pitch with bullet points:\n- Point 1\n- Point 2',
     });
 
     const verboseOutput = outputRepo.createOutput({
       taskId: task.id,
-      modelId: 'gpt-4o',
+      modelId: 'deepseek-v4-1-flash',
       anonymousId: 'anon_long',
       outputText: 'This is an extremely long, wordy, flowery paragraph with excessive adjectives describing the product at great length without any clear bullet points or structure.',
     });
@@ -90,6 +90,6 @@ describe('Preference Analytics Service', () => {
 
     expect(report.observedPreferences.some(p => p.dimension === 'Brevity & Conciseness')).toBe(true);
     expect(report.topMatchingModels.length).toBeGreaterThan(0);
-    expect(report.topMatchingModels[0].modelId).toBe('claude-3-5-sonnet');
+    expect(report.topMatchingModels[0].modelId).toBe('glm-5-3');
   });
 });

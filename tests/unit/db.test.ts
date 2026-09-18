@@ -68,7 +68,7 @@ describe('Database & Repositories', () => {
 
     const output1 = outputRepo.createOutput({
       taskId: task.id,
-      modelId: 'claude-3-5-sonnet',
+      modelId: 'glm-5-3',
       anonymousId: 'anon_001',
       outputText: 'Output 1 text',
       promptTokens: 10,
@@ -80,7 +80,7 @@ describe('Database & Repositories', () => {
 
     const output2 = outputRepo.createOutput({
       taskId: task.id,
-      modelId: 'gpt-4o',
+      modelId: 'deepseek-v4-1-flash',
       anonymousId: 'anon_002',
       outputText: 'Output 2 text',
       promptTokens: 10,
@@ -118,7 +118,7 @@ describe('Database & Repositories', () => {
       scope: 'personal',
       userId: 'default_user',
       category: 'General Writing',
-      modelId: 'claude-3-5-sonnet',
+      modelId: 'glm-5-3',
       bradleyTerryScore: 110.5,
       eloRating: 1220.0,
       battlesCount: 1,
@@ -131,7 +131,7 @@ describe('Database & Repositories', () => {
 
     const rankings = rankingRepo.getRankings({ scope: 'personal', userId: 'default_user', category: 'General Writing' });
     expect(rankings.length).toBe(1);
-    expect(rankings[0].model_id).toBe('claude-3-5-sonnet');
+    expect(rankings[0].model_id).toBe('glm-5-3');
     expect(rankings[0].elo_rating).toBe(1220.0);
   });
 });

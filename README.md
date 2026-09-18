@@ -14,6 +14,8 @@
 
 **Custom instructions to prevent Claude bypassing BlindWrite MCP?** See [`CLAUDE_PROMPT.md`](./CLAUDE_PROMPT.md) — paste it into Claude Desktop's Custom Instructions so drafting always delegates to `writer_generate`, even if skill routing fails.
 
+**Looking for the full content production pipeline?** Jump to [Section 7: Autonomous Content Production Pipeline (`/create-content`)](#7-autonomous-content-production-pipeline-create-content) to produce complete, audited, publish-ready articles with DataForSEO, Firecrawl, and OpenRouter in a single command.
+
 ---
  
 ## 1. Problem & Purpose
@@ -302,7 +304,128 @@ If you prefer to configure Claude Desktop manually instead of using `npm run set
 
 ---
 
-## 7. Example Workflows in Claude Desktop
+## 7. Autonomous Content Production Pipeline (`/create-content`)
+
+> **One Invocation. One Publish-Ready Article.**  
+> The autonomous content pipeline orchestrates Claude, DataForSEO, Firecrawl, and OpenRouter into an uninterrupted end-to-end publishing pipeline. It handles preflight checks, intake, SERP/competitor research, quality checklist compilation, high-speed drafting, dual-gate AI/EEAT auditing, and automated revision loops with zero manual glue.
+
+```mermaid
+flowchart TD
+    subgraph Phase0 [Phase 0: Preflight]
+        P0A[Verify MCP Bridge] --> P0B[Resolve Site from Registry]
+        P0B --> P0C[Verify Voice Doc]
+        P0C --> P0D[Confirm Enabled Models]
+    end
+
+    subgraph Phase1 [Phase 1: Intake]
+        P1A[Capture Topic & Constraints] --> P1B[Generate Job ID]
+        P1B --> P1C[Load Content Profile]
+    end
+
+    subgraph Phase2 [Phase 2: Research & Brief]
+        P2A[DataForSEO SERP Analysis] --> P2B[Firecrawl Competitor Extraction]
+        P2B --> P2C[Compile MASTER_WRITING_BRIEF]
+    end
+
+    subgraph Phase3 [Phase 3: Checklist & Voice]
+        P3A[Verbatim Quality Checklist] --> P3B[Verbatim Voice Requirements]
+        P3B --> P3C[Assemble Prompt Architecture]
+    end
+
+    subgraph Phase4 [Phase 4: Draft & Revision Loop]
+        P4A[OpenRouter Drafting via writing-orchestrator] --> P4B[Claude Dual-Gate Audit]
+        P4B -->|Needs Revision max 3x| P4C[Targeted Fix Prompt]
+        P4C --> P4A
+    end
+
+    subgraph Phase5 [Phase 5: Clean Delivery]
+        P4B -->|Pass| P5A[Save to data/drafts/]
+        P5A --> P5B[Log Job to data/jobs/]
+        P5B --> P5C[Clean Markdown Output in Chat]
+    end
+
+    Phase0 --> Phase1 --> Phase2 --> Phase3 --> Phase4 --> Phase5
+```
+
+### 7.1 How to Run (Single Invocation)
+
+In Claude Desktop, simply invoke `/create-content`:
+
+```text
+/create-content
+
+Site: faceshapetool.com
+Keyword: best hairstyles for oblong face shape
+Topic: Complete Haircut Guide for Oblong Faces (Men & Women)
+Content type: seo_article
+Target length: 1500-2000 words
+Special requirements: Include comparison table of flattering vs unflattering styles
+```
+
+*(Note: If your active Claude Project name matches the site in `site-registry.md`, you can omit the `Site:` line—it is detected automatically).*
+
+---
+
+### 7.2 The 6 Execution Phases
+
+| Phase | Responsibility | What Happens Autonomously |
+| :--- | :--- | :--- |
+| **Phase 0: Preflight** | 4 Hard Stops | 1. Confirms BlindWrite MCP is online via `benchmark_list_models`.<br/>2. Resolves site against `site-registry.md` (`status: active`).<br/>3. Verifies voice document is readable (never invents a voice).<br/>4. Verifies an active drafting model exists (`deepseek-v4-1-flash` or `glm-5-3`). |
+| **Phase 1: Intake** | Task Framing | Assigns a unique `job_id` (`JOB-YYYYMMDD-XXXX`), extracts target audience, business goal, and sets content type profile & author persona. |
+| **Phase 2: Pre-Writing Research** | Live Data Grounding | `content-brief` or `semantic-seo-content` conducts live DataForSEO (`mcp__dfseo__*`) and Firecrawl (`mcp__firecrawl__*`) research—pulling real SERP rankings, search intent, competitor outlines, and entities into a structured `MASTER_WRITING_BRIEF`. |
+| **Phase 3: Checklist & Voice Layer** | Prompt Compilation | Copies **verbatim** rules from `google-helpful-content-grader`, `no-ai-slop`, `avoid-ai-detection`, and the site's voice document directly into the prompt architecture. Never summarizes or paraphrases guidelines. |
+| **Phase 4: Draft & Grading Loop** | OpenRouter Execution + Claude Audit | Calls `writing-orchestrator` to generate drafts via OpenRouter. Claude acts as the strict editorial auditor running `eeat-audit` (authorship & trust) and `avoid-ai-detection` (slop, false claims, tracking artifacts). If issues are detected, OpenRouter iteratively fixes them (up to 3 loops). |
+| **Phase 5: Delivery & Logging** | Clean Publishing | Auto-saves the finalized markdown to `data/drafts/{category}-{timestamp}.md`, records complete audit telemetry to `data/jobs/{job_id}.json`, and presents pure, publish-ready Markdown without token badges or debug clutter. |
+
+---
+
+### 7.3 Site Registry Configuration (`site-registry.md`)
+
+All site-specific configuration is decoupled from code and lives in [`.agents/skills/create-content/site-registry.md`](.agents/skills/create-content/site-registry.md):
+
+```yaml
+site: faceshapetool.com
+status: active # active | out_of_scope | blocked
+voice_doc_path: "d:/path/to/voice-guidelines.md"
+persona: "Licensed Cosmetologist & Face Shape Consultant"
+hard_rules:
+  - "Never recommend high pompadours or vertical volume for oblong faces."
+  - "No artificial hype or marketing fluff."
+content_profiles:
+  seo_article:
+    pre_writing_skill: semantic-seo-content
+    voice_skill: heading-microcopy-writer
+    target_length_default: "1800-2400 words"
+```
+
+---
+
+### 7.4 Supported Drafting Models & Cost Breakdown
+
+The pipeline exclusively uses two frontier OpenRouter models configured for high-velocity drafting:
+
+| Model Name | OpenRouter ID | Pricing (Input / Output per 1M) | Best For |
+| :--- | :--- | :--- | :--- |
+| **DeepSeek V4.1 Flash** | `deepseek/deepseek-v4.1-flash` | **$0.15 / $0.60** | **Cost Default**: 1,500–2,500 word articles for pennies (~$0.001 per run). |
+| **GLM 5.3** | `z-ai/glm-5.3` | **$0.936 / $3.168** | **High Quality**: Complex technical synthesis, nuanced argumentation, or legal analysis. |
+
+---
+
+### 7.5 Stop Conditions & Escalation Handling
+
+The pipeline stops and asks for human intervention only on critical edge cases:
+
+- **MCP Bridge Disconnected**: If `benchmark_list_models` fails, it halts immediately without silent Claude fallback.
+- **Voice Document Missing / "PENDING"**: Halts to prevent generating content in an uncalibrated tone. Users can provide the file path or explicitly sign off on proceeding with generic voice.
+- **Out of Scope Site**: Sites marked `status: out_of_scope` are rejected with the recorded reason.
+- **Escalation after 3 Loops**: If an audit issue persists across 3 OpenRouter revisions, the pipeline offers three explicit options:
+  1. Ship with the audit caveat noted.
+  2. One-time exception: Claude directly polishes the remaining flagged lines.
+  3. Re-draft with GLM 5.3.
+
+---
+
+## 8. Example Workflows in Claude Desktop
 
 ### Workflow A: High-Conversion B2B Cold Outreach Email
 **Goal**: Craft a personalized, high-response email while saving Claude output tokens.
@@ -390,7 +513,7 @@ If you prefer to configure Claude Desktop manually instead of using `npm run set
 
 ---
 
-## 8. Mathematical Ranking Details
+## 9. Mathematical Ranking Details
 
 ### Bradley-Terry Maximum Likelihood Estimation (MLE)
 Pairwise choice probabilities follow:
@@ -406,7 +529,7 @@ $$\pi_i^{(t+1)} = \frac{W_i + \alpha}{\sum_{j \ne i} \frac{N_{ij}}{\pi_i^{(t)} +
 
 ---
 
-## 9. Testing
+## 10. Testing
 
 The project includes an extensive test suite verifying mathematical correctness, zero-bias coin toss distributions, strict anonymity boundaries, and end-to-end tournament simulations:
 
@@ -420,6 +543,6 @@ npm run test:watch
 
 ---
 
-## 10. License
+## 11. License
 
 MIT © Yadnyesh Borole.

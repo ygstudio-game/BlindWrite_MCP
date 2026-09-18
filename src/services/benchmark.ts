@@ -761,14 +761,17 @@ export class BenchmarkService {
         this.modelRepo.listModels(true)[0];
 
       if (!modelRecord) {
+        // Last-resort fallback: construct a synthetic model record.
+        // This path should never be reached in normal operation (DB always has the two enabled models).
+        // Pricing here is DeepSeek V4.1 Flash as of 2026-09-14 — keep in sync with migrations.ts.
         modelRecord = {
-          id: targetModelId ?? 'custom-model',
+          id: targetModelId ?? 'deepseek-v4-1-flash',
           openrouter_model_id: targetModelId ?? 'deepseek/deepseek-v4.1-flash',
-          display_name: targetModelId ?? 'Custom Model',
+          display_name: targetModelId ?? 'DeepSeek V4.1 Flash',
           provider: 'OpenRouter',
           enabled: 1,
-          prompt_price_per_m: 0.14,
-          completion_price_per_m: 0.28,
+          prompt_price_per_m: 0.15,
+          completion_price_per_m: 0.60,
           created_at: new Date().toISOString(),
         };
       }

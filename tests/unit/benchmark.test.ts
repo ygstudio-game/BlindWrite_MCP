@@ -43,7 +43,7 @@ describe('Benchmark Orchestration Service', () => {
     // Mock OpenRouter parallel output generation
     vi.spyOn(service['openRouterService'], 'generateOutputsParallel').mockResolvedValue([
       {
-        modelId: 'claude-3-5-sonnet',
+        modelId: 'glm-5-3',
         outputText: 'The fog crept through the cobblestone alley.',
         promptTokens: 20,
         completionTokens: 30,
@@ -52,7 +52,7 @@ describe('Benchmark Orchestration Service', () => {
         estimatedCost: 0.0005,
       },
       {
-        modelId: 'gpt-4o',
+        modelId: 'deepseek-v4-1-flash',
         outputText: 'Rain tapped relentlessly against the attic window.',
         promptTokens: 20,
         completionTokens: 35,
@@ -62,14 +62,14 @@ describe('Benchmark Orchestration Service', () => {
       },
     ]);
 
-    const result = await service.generateOutputs(task.id, ['claude-3-5-sonnet', 'gpt-4o']);
+    const result = await service.generateOutputs(task.id, ['glm-5-3', 'deepseek-v4-1-flash']);
     expect(result.outputsGenerated).toBe(2);
     expect(result.anonymousOutputIds.length).toBe(2);
 
     // Verify outputs are anonymized and stored
     const resultJson = JSON.stringify(result);
-    expect(resultJson).not.toContain('claude-3-5-sonnet');
-    expect(resultJson).not.toContain('gpt-4o');
+    expect(resultJson).not.toContain('glm-5-3');
+    expect(resultJson).not.toContain('deepseek-v4-1-flash');
   });
 
   it('orchestrates A/B duel, records vote, updates ratings, and handles tournament reveal gating', async () => {
@@ -82,7 +82,7 @@ describe('Benchmark Orchestration Service', () => {
     // Mock outputs
     vi.spyOn(service['openRouterService'], 'generateOutputsParallel').mockResolvedValue([
       {
-        modelId: 'claude-3-5-sonnet',
+        modelId: 'glm-5-3',
         outputText: 'Response 1',
         promptTokens: 10,
         completionTokens: 10,
@@ -91,7 +91,7 @@ describe('Benchmark Orchestration Service', () => {
         estimatedCost: 0.0001,
       },
       {
-        modelId: 'gpt-4o',
+        modelId: 'deepseek-v4-1-flash',
         outputText: 'Response 2',
         promptTokens: 10,
         completionTokens: 10,
@@ -101,7 +101,7 @@ describe('Benchmark Orchestration Service', () => {
       },
     ]);
 
-    await service.generateOutputs(task.id, ['claude-3-5-sonnet', 'gpt-4o']);
+    await service.generateOutputs(task.id, ['glm-5-3', 'deepseek-v4-1-flash']);
 
     // 1. Start duel
     const duel = service.startDuel(task.id);
@@ -129,18 +129,18 @@ describe('Benchmark Orchestration Service', () => {
     expect(revealedResults.revealed).toBe(true);
     expect(revealedResults.models).toBeDefined();
     expect(revealedResults.models?.length).toBe(2);
-    expect(revealedResults.models?.some(m => m.modelId === 'claude-3-5-sonnet')).toBe(true);
+    expect(revealedResults.models?.some(m => m.modelId === 'glm-5-3')).toBe(true);
 
     // 5. Check leaderboard
     const leaderboard = service.getLeaderboard({ scope: 'personal' });
     expect(leaderboard.length).toBeGreaterThan(0);
 
     // 6. Compare models
-    const comparison = service.compareModels('claude-3-5-sonnet', 'gpt-4o');
+    const comparison = service.compareModels('glm-5-3', 'deepseek-v4-1-flash');
     expect(comparison.totalBattles).toBe(1);
 
     // 7. Get model stats
-    const stats = service.getModelStats('claude-3-5-sonnet');
+    const stats = service.getModelStats('glm-5-3');
     expect(stats.battles).toBe(1);
   });
 });

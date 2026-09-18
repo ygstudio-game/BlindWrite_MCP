@@ -21,7 +21,7 @@ describe('WriterGenerate and directWrite', () => {
 
   it('delegates writing to explicit model via OpenRouter', async () => {
     vi.spyOn(service.openRouterService, 'generateOutput').mockResolvedValue({
-      modelId: 'gpt-4o',
+      modelId: 'deepseek-v4-1-flash',
       outputText: 'Subject: Quick question regarding your sales pipeline\n\nHi Alex, noticed your recent growth...',
       promptTokens: 50,
       completionTokens: 120,
@@ -32,12 +32,12 @@ describe('WriterGenerate and directWrite', () => {
 
     const result = await service.directWrite({
       prompt: 'Write a cold email to a VP of Sales.',
-      modelId: 'openai/gpt-4o',
+      modelId: 'deepseek/deepseek-v4.1-flash',
       temperature: 0.7,
     });
 
     expect(result.text).toContain('Quick question');
-    expect(result.modelId).toBe('gpt-4o');
+    expect(result.modelId).toBe('deepseek-v4-1-flash');
     expect(result.latencyMs).toBe(820);
     expect(result.tokensCompletion).toBe(120);
     expect(result.estimatedCostUsd).toBeGreaterThan(0);
@@ -91,7 +91,7 @@ describe('WriterGenerate and directWrite', () => {
       scope: 'personal',
       userId: 'default_user',
       category: 'Emails',
-      modelId: 'claude-3-5-sonnet',
+      modelId: 'deepseek-v4-1-flash',
       bradleyTerryScore: 125.0,
       eloRating: 1350.0,
       battlesCount: 8,
@@ -103,8 +103,8 @@ describe('WriterGenerate and directWrite', () => {
     });
 
     vi.spyOn(service.openRouterService, 'generateOutput').mockResolvedValue({
-      modelId: 'claude-3-5-sonnet',
-      outputText: 'Top-ranked email draft from Claude 3.5 Sonnet.',
+      modelId: 'deepseek-v4-1-flash',
+      outputText: 'Top-ranked email draft from DeepSeek Flash.',
       promptTokens: 40,
       completionTokens: 150,
       totalTokens: 190,
@@ -117,13 +117,13 @@ describe('WriterGenerate and directWrite', () => {
       category: 'Emails',
     });
 
-    expect(result.modelId).toBe('claude-3-5-sonnet');
+    expect(result.modelId).toBe('deepseek-v4-1-flash');
     expect(result.selectionReason).toContain('Ranked #1 on your personal leaderboard');
   });
 
   it('appends self-critique instructions when includeCritique is true', async () => {
     const spy = vi.spyOn(service.openRouterService, 'generateOutput').mockResolvedValue({
-      modelId: 'deepseek-v3',
+      modelId: 'glm-5-3',
       outputText: 'Draft with self-critique block at the end.',
       promptTokens: 50,
       completionTokens: 100,
@@ -148,7 +148,7 @@ describe('WriterGenerate and directWrite', () => {
 
   it('exports draft to local data/drafts/ directory by default', async () => {
     vi.spyOn(service.openRouterService, 'generateOutput').mockResolvedValue({
-      modelId: 'deepseek-v3',
+      modelId: 'glm-5-3',
       outputText: 'Draft meant to be saved locally.',
       promptTokens: 40,
       completionTokens: 90,

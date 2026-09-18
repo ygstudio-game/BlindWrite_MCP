@@ -1,6 +1,6 @@
 ---
 name: writing-orchestrator
-description: "Orchestrates AI writing workflows using Claude as the thinking/strategy brain and OpenRouter models as the writing execution engine via BlindWrite MCP. Use when drafting content, benchmarking models, or saving Claude output tokens. Triggers on: blog post, blog writing, write a blog, draft a blog, write an article, draft an article, cold outreach email, sales email, sales copy, executive memo, technical RFC, social thread, social post, draft content, write content, generate a draft."
+description: "Orchestrates AI writing workflows using Claude as the thinking/strategy brain and OpenRouter models (GLM 5.3 and DeepSeek 4.1) as the writing execution engine via BlindWrite MCP. Use when drafting content or saving Claude output tokens. Triggers on: blog post, blog writing, write a blog, draft a blog, write an article, draft an article, cold outreach email, sales email, sales copy, executive memo, technical RFC, social thread, social post, draft content, write content, generate a draft."
 ---
 
 # Writing Orchestrator Skill 🖋️⚡
@@ -35,92 +35,85 @@ Repository: [https://github.com/ygstudio-game/BlindWrite_MCP](https://github.com
 Use this skill whenever:
 1. **Drafting content**: You need cold outreach emails, executive memos, blog posts, sales copy, technical RFCs, or social threads.
 2. **Saving tokens**: You want to avoid burning Claude output limits and quota on generating 1,000+ words of text.
-3. **Benchmarking models**: You want to objectively discover which frontier model (DeepSeek V3, Claude 3.5 Sonnet, GPT-4o, Llama 3.3, Gemini Pro) writes best for your personal voice without brand bias.
+
+---
+
+## Supported Models & Strict No-Fallback Policy
+
+This skill strictly uses only two models via BlindWrite MCP:
+1. **GLM 5.3** (`z-ai/glm-5.3`) — Priority model for high-quality, deep, nuanced drafting.
+2. **DeepSeek 4.1** (`deepseek/deepseek-v4.1-flash`) — Cost-effective model for high speed and rapid drafting.
+
+**Strict No Fallback Rule**:
+- Only GLM 5.3 or DeepSeek 4.1 are supported. No other models exist in this pipeline.
+- There is **no fallback** mechanism to any other model or tier.
+- If a model call fails, times out, or is unavailable, report the failure directly and clearly. Never fall back silently or substitute an unrequested model.
 
 ---
 
 ## The 3-Step Orchestration Loop (Zero Token Waste) ⚡
- 
- ```
- ┌─────────────────────────────────────────────────────────────┐
- │ 1. THINK & OUTLINE (Claude — Internal / Silent)             │
- │ - Clarify target audience, desired tone, and core goal.     │
- │ - Structure an outline or prompt blueprint for tool call.   │
- │ - DO NOT print outline, preamble, or steps to user chat.    │
- │ - DO NOT generate the final long text with Claude tokens.   │
- └──────────────────────────────┬──────────────────────────────┘
-                                │
- ┌──────────────────────────────▼──────────────────────────────┐
- │ 2. DELEGATE GENERATION (OpenRouter via writer_generate)     │
- │ - Daily Work: Call `writer_generate` (uses #1 ranked model) │
- │ - Optional: Pass `include_critique: true` for cheap review  │
- │ - Auto-exports a local copy to data/drafts/                 │
- └──────────────────────────────┬──────────────────────────────┘
-                                │
- ┌─────────────────────────────────────────────────────────────┐
- │ 3. DIRECT DELIVERY (Verbatim Draft Only)                    │
- │ - Present ONLY the draft verbatim in clean Markdown.        │
- │ - STRICTLY NO `### Summary`, NO `Process Used` recap.       │
- │ - Omit metrics badges, costs, token stats, and tool details.│
- │ - Ask: "Want me to critique this or refine any section?"    │
- └─────────────────────────────────────────────────────────────┘
- ```
- 
- ---
- 
- ## Two Execution Workflows
- 
- ### Workflow 1: Direct Token-Saving Drafting (80% of Daily Tasks)
- 
- When the user asks: *"Help me draft a sales pitch email to engineering leaders"*:
- 
- 1. **Think & Outline (Internal / Silent)**:
-    - Objective: Secure a 15-minute product intro.
-    - Persona: Engineering VP/CTO (values brevity, ROI, developer happiness).
-    - Angle: Highlighting 70% reduction in setup time.
-    - *Keep this reasoning silent; do not narrate steps or outline to the user.*
- 2. **Execute Delegation**:
-    - Call `writer_generate`:
-      ```json
-      {
-        "prompt": "Write a punchy 120-word cold outreach email to a CTO. Emphasize a 70% setup time reduction, zero developer friction, and include a soft call to action.",
-        "category": "Emails",
-        "include_critique": false,
-        "export_file": true,
-        "temperature": 0.7
-      }
-      ```
-    - **Why this works**: `writer_generate` automatically queries your personal leaderboard, selects your #1 model for "Emails" (or defaults to DeepSeek Flash `deepseek/deepseek-v4.1-flash`, with `z-ai/glm-5.3` available when high quality is prioritized), and auto-exports a local markdown file to `data/drafts/`.
- 3. **Direct Delivery (Clean Output)**:
-    - Present the generated draft directly and cleanly in Markdown.
-    - DO NOT include `### Summary`, `Process Used:`, workflow breakdowns, step recaps, or explanations of why the post works.
-    - DO NOT include metrics badges, token counts, cost amounts, latency times, file paths, or MCP tool references.
-    - Ask 1 closing question: *"Want me to critique this or refine any specific section?"*
-    - **The Anti-Tax Rule**: Strictly DO NOT generate an unprompted analysis, critique, summary, or rewrite. If the user wants an automated critique without burning Claude tokens, set `include_critique: true` in `writer_generate`!
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 1. THINK & OUTLINE (Claude — Internal / Silent)             │
+│ - Clarify target audience, desired tone, and core goal.     │
+│ - Structure an outline or prompt blueprint for tool call.   │
+│ - DO NOT print outline, preamble, or steps to user chat.    │
+│ - DO NOT generate the final long text with Claude tokens.   │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+┌──────────────────────────────▼──────────────────────────────┐
+│ 2. DELEGATE GENERATION (OpenRouter via writer_generate)     │
+│ - Drafting: Call `writer_generate` (GLM 5.3 / DeepSeek 4.1) │
+│ - Strict No Fallback: Only GLM 5.3 or DeepSeek 4.1 used     │
+│ - Optional: Pass `include_critique: true` for cheap review  │
+│ - Auto-exports a local copy to data/drafts/                 │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+┌─────────────────────────────────────────────────────────────┐
+│ 3. DIRECT DELIVERY (Verbatim Draft Only)                    │
+│ - Present ONLY the draft verbatim in clean Markdown.        │
+│ - STRICTLY NO `### Summary`, NO `Process Used` recap.       │
+│ - Omit metrics badges, costs, token stats, and tool details.│
+│ - Ask: "Want me to critique this or refine any section?"    │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ---
 
-### Workflow 2: Blind A/B Benchmark Duel (20% of Critical Tasks)
+## Execution Workflow: Direct Token-Saving Drafting
 
-When the user asks: *"Benchmark models for my executive memos"* or *"Compare GPT-4o vs Claude 3.5 Sonnet on this pitch"*:
+When the user asks: *"Help me draft a sales pitch email to engineering leaders"*:
 
-1. **Create Task**:
-   - Call `benchmark_create_task(title: "Q3 Strategy Memo", category: "Business Writing", prompt: "...")`.
-2. **Dispatch Parallel Models**:
-   - Call `benchmark_generate_outputs(task_id: "...")`. Competing models generate outputs simultaneously.
-3. **Present Blind Duel**:
-   - Call `benchmark_start_duel(task_id: "...")`.
-   - Present `Response A` vs `Response B` blindly with zero brand logos or names.
-4. **Record Preference**:
-   - Call `benchmark_submit_vote(battle_id: "...", choice: "A")`.
-   - Bradley-Terry MLE and Elo update dynamically.
-5. **Tournament Reveal**:
-   - Call `benchmark_get_results(task_id: "...", reveal: true)` to unmask model identities and display latency and cost.
+1. **Think & Outline (Internal / Silent)**:
+   - Objective: Secure a 15-minute product intro.
+   - Persona: Engineering VP/CTO (values brevity, ROI, developer happiness).
+   - Angle: Highlighting 70% reduction in setup time.
+   - *Keep this reasoning silent; do not narrate steps or outline to the user.*
+2. **Execute Delegation**:
+   - Call `writer_generate`:
+     ```json
+     {
+       "prompt": "Write a punchy 120-word cold outreach email to a CTO. Emphasize a 70% setup time reduction, zero developer friction, and include a soft call to action.",
+       "model_id": "z-ai/glm-5.3",
+       "category": "Emails",
+       "include_critique": false,
+       "export_file": true,
+       "temperature": 0.7
+     }
+     ```
+   - **Model Selection & No Fallback**: Choose either `z-ai/glm-5.3` (priority quality) or `deepseek/deepseek-v4.1-flash` (speed/cost). No other models are used, and no fallback occurs if unavailable. The draft is automatically exported locally to `data/drafts/`.
+3. **Direct Delivery (Clean Output)**:
+   - Present the generated draft directly and cleanly in Markdown.
+   - DO NOT include `### Summary`, `Process Used:`, workflow breakdowns, step recaps, or explanations of why the post works.
+   - DO NOT include metrics badges, token counts, cost amounts, latency times, file paths, or MCP tool references.
+   - Ask 1 closing question: *"Want me to critique this or refine any specific section?"*
+   - **The Anti-Tax Rule**: Strictly DO NOT generate an unprompted analysis, critique, summary, or rewrite. If the user wants an automated critique without burning Claude tokens, set `include_critique: true` in `writer_generate`!
 
 ---
 
 ## Best Practices & Rules
 
 - **Strict Stdio Hygiene**: BlindWrite MCP communicates strictly over stdio JSON-RPC. Diagnostics always go to `stderr`.
-- **Zero Brand Bias**: Never guess or reveal model identities before the user explicitly requests results.
-- **Cost Awareness**: Highlight the cost comparison (DeepSeek V3 costs ~$0.0003 per draft vs ~$0.03+ for frontier models).
+- **Only GLM 5.3 & DeepSeek 4.1**: Never route to or mention any other model. No fallback models exist.
+- **Fail Explicitly**: If generation fails or the selected model is unreachable, report the error immediately to the user rather than substituting another model or falling back silently.

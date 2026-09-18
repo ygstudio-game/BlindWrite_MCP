@@ -47,8 +47,8 @@ describe('MCP Tools Integration', () => {
     // Mock output generation
     vi.spyOn(benchmarkService.openRouterService, 'generateOutputsParallel').mockResolvedValue([
       {
-        modelId: 'claude-3-5-sonnet',
-        outputText: 'First output from Claude',
+        modelId: 'glm-5-3',
+        outputText: 'First output from GLM',
         promptTokens: 10,
         completionTokens: 20,
         totalTokens: 30,
@@ -56,8 +56,8 @@ describe('MCP Tools Integration', () => {
         estimatedCost: 0.0003,
       },
       {
-        modelId: 'gpt-4o',
-        outputText: 'Second output from GPT',
+        modelId: 'deepseek-v4-1-flash',
+        outputText: 'Second output from DeepSeek',
         promptTokens: 10,
         completionTokens: 25,
         totalTokens: 35,
@@ -87,11 +87,11 @@ describe('MCP Tools Integration', () => {
       const leaderboard = benchmarkService.getLeaderboard({ scope: 'personal' });
       expect(leaderboard.length).toBeGreaterThan(0);
 
-      const comparison = benchmarkService.compareModels('claude-3-5-sonnet', 'gpt-4o');
+      const comparison = benchmarkService.compareModels('glm-5-3', 'deepseek-v4-1-flash');
       expect(comparison.totalBattles).toBe(1);
 
-      const stats = benchmarkService.getModelStats('claude-3-5-sonnet');
-      expect(stats.modelId).toBe('claude-3-5-sonnet');
+      const stats = benchmarkService.getModelStats('glm-5-3');
+      expect(stats.modelId).toBe('glm-5-3');
 
       const prefs = benchmarkService.analyzePreferences('Emails');
       expect(prefs.totalVotesAnalyzed).toBe(1);
