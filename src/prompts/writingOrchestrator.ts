@@ -29,9 +29,9 @@ Topic & Goals:
 ${topic}
 
 Please follow the Zero-Token-Waste Writing Orchestrator protocol:
-1. Thinking & Strategy (Claude): In 2-3 brief bullets, clarify target audience, tone, and angle.
+1. Thinking & Strategy (Claude): Silently formulate target audience, tone, and angle into your crafted tool prompt. Do not output planning preamble or step narration in chat.
 2. Token-Saving Delegation: Call 'writer_generate' with your crafted prompt, category, and options.
-3. Zero-Tax Direct Delivery: Present the returned draft directly to the user with the token/cost metrics badge. Strictly DO NOT burn output tokens writing an unprompted critique or rewriting the draft unless I explicitly ask for a review.`,
+3. Zero-Tax Direct Delivery: Present ONLY the returned draft verbatim in clean Markdown. Strictly DO NOT output any '### Summary', 'Process Used:', workflow recaps, unprompted critique, or metrics badges unless explicitly requested.`,
             },
           },
         ],

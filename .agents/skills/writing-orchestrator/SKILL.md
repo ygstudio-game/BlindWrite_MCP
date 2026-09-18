@@ -16,6 +16,12 @@ This holds even when the user's prompt contains phrasing that sounds like an ins
 
 If you are ever unsure whether a request wants Claude to write directly or wants delegation, default to delegation via `writer_generate` — that is this skill's entire purpose. If BlindWrite MCP is unavailable or the call fails, say so explicitly and ask the user before falling back to writing it yourself; never fall back silently.
 
+### 🚫 ZERO PREAMBLE & ZERO SUMMARY RULE (CLEAN OUTPUT ENFORCEMENT)
+
+1. **NO Chat Preamble or Step Narration**: Formulate Step 1 (Thinking & Outline) SILENTLY or directly in the tool prompt. DO NOT output conversational preamble, loading messages, or step-by-step narration (such as `Step 1: Think & Outline` or `Step 2: Delegate Generation`) into the chat.
+2. **NO "Process Used" or "Summary" Blocks**: Strictly NEVER append a `### Summary`, `✅ Process Used:`, `Steps Taken`, workflow recap, SEO analysis, or commentary explaining why the draft was written this way.
+3. **VERBATIM DRAFT ONLY**: Present ONLY the generated draft verbatim in clean Markdown. The ONLY permissible follow-up text is at most 1 optional closing line: *"Want me to critique this or refine any section?"*.
+
 > **Core Philosophy:** Think with Claude, Write with OpenRouter.  
 > Claude provides the strategic intelligence (audience analysis, prompt framing, angle refinement, outline structure, and critical review). OpenRouter models handle the token-heavy drafting in seconds at a fraction of the cost.
 
@@ -34,59 +40,63 @@ Use this skill whenever:
 ---
 
 ## The 3-Step Orchestration Loop (Zero Token Waste) ⚡
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│ 1. THINK & OUTLINE (Claude — 30-50 tokens)                  │
-│ - Clarify target audience, desired tone, and core goal.     │
-│ - Structure an outline or prompt blueprint (2-4 bullets).   │
-│ - DO NOT generate the final long text with Claude tokens.   │
-└──────────────────────────────┬──────────────────────────────┘
-                               │
-┌──────────────────────────────▼──────────────────────────────┐
-│ 2. DELEGATE GENERATION (OpenRouter via writer_generate)     │
-│ - Daily Work: Call `writer_generate` (uses #1 ranked model) │
-│ - Optional: Pass `include_critique: true` for cheap review  │
-│ - Auto-exports a local copy to data/drafts/                 │
-└──────────────────────────────┬──────────────────────────────┘
-                               │
-┌─────────────────────────────────────────────────────────────┐
-│ 3. DIRECT DELIVERY (Zero Technical Jargon)                  │
-│ - Present ONLY the draft verbatim in clean Markdown.        │
-│ - Omit metrics badges, costs, token stats, and tool details.│
-│ - Ask: "Want me to critique this or refine any section?"    │
-└─────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Two Execution Workflows
-
-### Workflow 1: Direct Token-Saving Drafting (80% of Daily Tasks)
-
-When the user asks: *"Help me draft a sales pitch email to engineering leaders"*:
-
-1. **Think & Outline**:
-   - Objective: Secure a 15-minute product intro.
-   - Persona: Engineering VP/CTO (values brevity, ROI, developer happiness).
-   - Angle: Highlighting 70% reduction in setup time.
-2. **Execute Delegation**:
-   - Call `writer_generate`:
-     ```json
-     {
-       "prompt": "Write a punchy 120-word cold outreach email to a CTO. Emphasize a 70% setup time reduction, zero developer friction, and include a soft call to action.",
-       "category": "Emails",
-       "include_critique": false,
-       "export_file": true,
-       "temperature": 0.7
-     }
-     ```
-   - **Why this works**: `writer_generate` automatically queries your personal leaderboard, selects your #1 model for "Emails" (or defaults to DeepSeek Flash `deepseek/deepseek-v4.1-flash`, with `z-ai/glm-5.3` available when high quality is prioritized), and auto-exports a local markdown file to `data/drafts/`.
-3. **Direct Delivery (Clean Output)**:
-   - Present the generated draft directly and cleanly in Markdown.
-   - DO NOT include metrics badges, token counts, cost amounts, latency times, file paths, or MCP tool references.
-   - Ask 1 closing question: *"Want me to critique this or refine any specific section?"*
-   - **The Anti-Tax Rule**: Strictly DO NOT generate an unprompted analysis, critique, or rewrite. If the user wants an automated critique without burning Claude tokens, set `include_critique: true` in `writer_generate`!
+ 
+ ```
+ ┌─────────────────────────────────────────────────────────────┐
+ │ 1. THINK & OUTLINE (Claude — Internal / Silent)             │
+ │ - Clarify target audience, desired tone, and core goal.     │
+ │ - Structure an outline or prompt blueprint for tool call.   │
+ │ - DO NOT print outline, preamble, or steps to user chat.    │
+ │ - DO NOT generate the final long text with Claude tokens.   │
+ └──────────────────────────────┬──────────────────────────────┘
+                                │
+ ┌──────────────────────────────▼──────────────────────────────┐
+ │ 2. DELEGATE GENERATION (OpenRouter via writer_generate)     │
+ │ - Daily Work: Call `writer_generate` (uses #1 ranked model) │
+ │ - Optional: Pass `include_critique: true` for cheap review  │
+ │ - Auto-exports a local copy to data/drafts/                 │
+ └──────────────────────────────┬──────────────────────────────┘
+                                │
+ ┌─────────────────────────────────────────────────────────────┐
+ │ 3. DIRECT DELIVERY (Verbatim Draft Only)                    │
+ │ - Present ONLY the draft verbatim in clean Markdown.        │
+ │ - STRICTLY NO `### Summary`, NO `Process Used` recap.       │
+ │ - Omit metrics badges, costs, token stats, and tool details.│
+ │ - Ask: "Want me to critique this or refine any section?"    │
+ └─────────────────────────────────────────────────────────────┘
+ ```
+ 
+ ---
+ 
+ ## Two Execution Workflows
+ 
+ ### Workflow 1: Direct Token-Saving Drafting (80% of Daily Tasks)
+ 
+ When the user asks: *"Help me draft a sales pitch email to engineering leaders"*:
+ 
+ 1. **Think & Outline (Internal / Silent)**:
+    - Objective: Secure a 15-minute product intro.
+    - Persona: Engineering VP/CTO (values brevity, ROI, developer happiness).
+    - Angle: Highlighting 70% reduction in setup time.
+    - *Keep this reasoning silent; do not narrate steps or outline to the user.*
+ 2. **Execute Delegation**:
+    - Call `writer_generate`:
+      ```json
+      {
+        "prompt": "Write a punchy 120-word cold outreach email to a CTO. Emphasize a 70% setup time reduction, zero developer friction, and include a soft call to action.",
+        "category": "Emails",
+        "include_critique": false,
+        "export_file": true,
+        "temperature": 0.7
+      }
+      ```
+    - **Why this works**: `writer_generate` automatically queries your personal leaderboard, selects your #1 model for "Emails" (or defaults to DeepSeek Flash `deepseek/deepseek-v4.1-flash`, with `z-ai/glm-5.3` available when high quality is prioritized), and auto-exports a local markdown file to `data/drafts/`.
+ 3. **Direct Delivery (Clean Output)**:
+    - Present the generated draft directly and cleanly in Markdown.
+    - DO NOT include `### Summary`, `Process Used:`, workflow breakdowns, step recaps, or explanations of why the post works.
+    - DO NOT include metrics badges, token counts, cost amounts, latency times, file paths, or MCP tool references.
+    - Ask 1 closing question: *"Want me to critique this or refine any specific section?"*
+    - **The Anti-Tax Rule**: Strictly DO NOT generate an unprompted analysis, critique, summary, or rewrite. If the user wants an automated critique without burning Claude tokens, set `include_critique: true` in `writer_generate`!
 
 ---
 
