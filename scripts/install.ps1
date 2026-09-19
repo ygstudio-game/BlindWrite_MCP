@@ -15,22 +15,90 @@ $progFiles = [System.Environment]::GetEnvironmentVariable("ProgramFiles")
 $appData = [System.Environment]::GetEnvironmentVariable("APPDATA")
 $localAppData = [System.Environment]::GetEnvironmentVariable("LOCALAPPDATA")
 
-# 1. Determine Installation Directory
-$RepoUrl = "https://github.com/ygstudio-game/BlindWrite_MCP.git"
-$TargetDir = ""
-
-# Check if currently inside the repository
-if (Test-Path ".\scripts\setup.js") {
-    $TargetDir = (Get-Item ".").FullName
-    Write-Host ">> Running inside existing repository: $TargetDir" -ForegroundColor Green
-} elseif (Test-Path "..\scripts\setup.js") {
-    $TargetDir = (Get-Item "..").FullName
-    Write-Host ">> Running inside repository folder: $TargetDir" -ForegroundColor Green
-} else {
-    # Default destination folder in user's AppData
-    $TargetDir = Join-Path $localAppData "BlindWrite_MCP"
-    Write-Host ">> Target installation folder: $TargetDir" -ForegroundColor Yellow
+# Helper for interactive prompt with fallback
+function Prompt-User {
+    param(
+        [string]$Message,
+        [string]$Default = ""
+    )
+    if ([Console]::IsInputRedirected) {
+        return $Default
+    }
+    try {
+        $promptText = if ($Default) { "$Message [$Default]: " } else { "${Message}: " }
+        $resp = Read-Host -Prompt $promptText
+        if ([string]::IsNullOrWhiteSpace($resp)) {
+            return $Default
+        }
+        return $resp.Trim()
+    } catch {
+        return $Default
+    }
 }
+
+# 1. Determine & Select Installation Directory
+$RepoUrl = "https://github.com/ygstudio-game/BlindWrite_MCP.git"
+$DefaultInstallDir = Join-Path $localAppData "BlindWrite_MCP"
+$DetectedPath = ""
+
+# Scan Claude Desktop configuration for existing blindwrite path
+$ClaudeConfigPath = Join-Path $appData "Claude\claude_desktop_config.json"
+if (Test-Path $ClaudeConfigPath) {
+    try {
+        $claudeJson = Get-Content -Raw -Path $ClaudeConfigPath | ConvertFrom-Json
+        if ($claudeJson.mcpServers -and $claudeJson.mcpServers.blindwrite -and $claudeJson.mcpServers.blindwrite.args) {
+            $configuredIndex = $claudeJson.mcpServers.blindwrite.args[0]
+            if ($configuredIndex) {
+                $configuredParent = (Get-Item $configuredIndex -ErrorAction SilentlyContinue).Directory.Parent.FullName
+                if ($configuredParent -and (Test-Path (Join-Path $configuredParent "package.json"))) {
+                    $DetectedPath = $configuredParent
+                }
+            }
+        }
+    } catch {
+        # Ignore json read errors
+    }
+}
+
+# Check if currently inside the repository or if default path exists
+if (Test-Path ".\scripts\setup.js") {
+    $DetectedPath = (Get-Item ".").FullName
+} elseif (Test-Path "..\scripts\setup.js") {
+    $DetectedPath = (Get-Item "..").FullName
+} elseif (-not $DetectedPath -and (Test-Path (Join-Path $DefaultInstallDir "package.json"))) {
+    $DetectedPath = $DefaultInstallDir
+}
+
+# Check for explicit override via variable or environment
+$TargetDir = ""
+if ($env:INSTALL_PATH) {
+    $TargetDir = [System.IO.Path]::GetFullPath($env:INSTALL_PATH.Trim().Trim('"').Trim("'"))
+    Write-Host ">> Using installation path from environment: $TargetDir" -ForegroundColor Cyan
+} elseif ($args -and $args.Count -gt 0 -and $args[0] -like "--path=*") {
+    $customArg = $args[0].Substring(7).Trim().Trim('"').Trim("'")
+    $TargetDir = [System.IO.Path]::GetFullPath($customArg)
+    Write-Host ">> Using installation path from argument: $TargetDir" -ForegroundColor Cyan
+} elseif ($DetectedPath) {
+    Write-Host ">> Detected existing BlindWrite MCP installation at:" -ForegroundColor Green
+    Write-Host "   $DetectedPath" -ForegroundColor Cyan
+    Write-Host ""
+    $choice = Prompt-User -Message "Use this installation directory? (Y/n - 'n' to choose a different path)" -Default "Y"
+    if ($choice -and $choice.ToLower() -eq "n") {
+        $customPath = Prompt-User -Message "Enter new installation directory" -Default $DefaultInstallDir
+        $TargetDir = [System.IO.Path]::GetFullPath($customPath.Trim('"').Trim("'"))
+    } else {
+        $TargetDir = $DetectedPath
+    }
+} else {
+    Write-Host ">> Default target installation folder:" -ForegroundColor Yellow
+    Write-Host "   $DefaultInstallDir" -ForegroundColor Cyan
+    Write-Host ""
+    $customPath = Prompt-User -Message "Enter installation directory (press Enter to accept default)" -Default $DefaultInstallDir
+    $TargetDir = [System.IO.Path]::GetFullPath($customPath.Trim('"').Trim("'"))
+}
+
+Write-Host ">> Target installation path set to: $TargetDir" -ForegroundColor Green
+Write-Host ""
 
 # 2. Check and Add Common Node.js / NVM Paths to Current Process
 $CommonPaths = @(
@@ -96,19 +164,23 @@ if (-not (Test-Path $pkgPath)) {
     $IsManagedDir = ($TargetDir -eq $DefaultInstallDir) -or `
                     ((Test-Path $DefaultInstallDir) -and ((Get-Item $TargetDir).FullName -eq (Get-Item $DefaultInstallDir).FullName))
 
-    if ($IsManagedDir) {
-        # Dedicated installation directory: cleanly synchronize tracked files with origin/main
-        & git -C $TargetDir fetch origin main
-        & git -C $TargetDir reset --hard origin/main
-    } else {
-        # Development / working copy: revert auto-generated artifacts before pulling to avoid merge conflicts
-        & git -C $TargetDir checkout -- skills/writing-orchestrator.zip .claude/skills/writing-orchestrator/SKILL.md package-lock.json 2>$null
-        & git -C $TargetDir pull origin main
-    }
+    if (Test-Path (Join-Path $TargetDir ".git")) {
+        if ($IsManagedDir) {
+            # Dedicated installation directory: cleanly synchronize tracked files with origin/main
+            & git -C $TargetDir fetch origin main
+            & git -C $TargetDir reset --hard origin/main
+        } else {
+            # Development / working copy: revert auto-generated artifacts before pulling to avoid merge conflicts
+            & git -C $TargetDir checkout -- skills/writing-orchestrator.zip .claude/skills/writing-orchestrator/SKILL.md package-lock.json 2>$null
+            & git -C $TargetDir pull origin main
+        }
 
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "Failed to update repository from GitHub." -ForegroundColor Red
-        exit 1
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "Failed to update repository from GitHub." -ForegroundColor Red
+            exit 1
+        }
+    } else {
+        Write-Host ">> Directory is not a git repository. Skipping git pull." -ForegroundColor Yellow
     }
 }
 

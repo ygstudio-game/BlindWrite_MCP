@@ -1,15 +1,19 @@
 ---
 name: create-content
-description: "Top-level content pipeline orchestrator. Single invocation runs the full Claude + OpenRouter + DataForSEO + Firecrawl content production pipeline: preflight checks, intake, pre-writing research, brief compilation, OpenRouter drafting via writing-orchestrator, Claude grading loop (eeat-audit + avoid-ai-detection), and clean delivery. One invocation produces one publish-ready article. Triggers on: /create-content, create article, create seo article, create content, run content pipeline, produce content."
+description: "Top-level content pipeline orchestrator. Single invocation runs the full Claude + OpenRouter + DataForSEO + Firecrawl content production pipeline: preflight checks, intake, pre-writing research, brief compilation, OpenRouter drafting via writing-orchestrator, Claude grading loop (eeat-audit + avoid-ai-detection), and clean delivery. One invocation produces one publish-ready article for ANY website or client. Triggers on: /create-content, create article, create seo article, create content, run content pipeline, produce content."
 ---
 
-# Create Content -- Pipeline Orchestrator Skill
+# Create Content -- Universal Pipeline Orchestrator Skill
 
 ## One Invocation. One Publish-Ready Article.
 
 This skill is the single entry point for the full content production pipeline. You do not
 manually execute the sub-steps (keyword research, SERP analysis, brief creation, drafting,
 audit, etc.) one at a time. One invocation of this skill runs the entire Phase 0-5 sequence.
+
+This skill is **100% self-contained** and works out-of-the-box for **any website or domain**.
+Site profiles and editorial guidelines can be passed directly in the invocation prompt or configured
+in the built-in Site Configuration section below.
 
 ---
 
@@ -18,15 +22,16 @@ audit, etc.) one at a time. One invocation of this skill runs the entire Phase 0
 ```
 /create-content
 
+Site / Domain: [OPTIONAL -- e.g. "myblog.com", "Acme Tech", or omit for default]
 Keyword: [PRIMARY_KEYWORD]
 Topic: [TOPIC -- if different from keyword]
-Content type: [seo_article | legal_service_page | listicle | blog_post | ...]
+Content type: [seo_article | b2b_service_page | listicle | blog_post | how_to_guide | ...]
+Voice / Tone: [OPTIONAL -- e.g. "Authoritative, conversational, no jargon", or path to voice doc]
 Target length: [OPTIONAL -- e.g. "1500-2000 words"]
-Special requirements: [OPTIONAL -- constraints beyond the registry's hard_rules]
+Special requirements: [OPTIONAL -- specific domain constraints]
 ```
 
-Only ask for information not inferable from the Claude Project, registry, or workspace.
-Do not ask for voice/persona -- that comes from the site registry.
+Only ask for information not inferable from the prompt, project, or workspace.
 
 ---
 
@@ -43,30 +48,28 @@ Call `benchmark_list_models`. If the call errors (MCP server unreachable), stop:
 
 Do not fall back to drafting in Claude directly.
 
-### Stop 2: Resolve which site this job is for
+### Stop 2: Resolve site identity & profile
 
-Determine site from the active Claude Project name. Look up the Project name in
-`.agents/skills/create-content/site-registry.md`.
+Determine site identity from:
+1. The `Site / Domain:` field in the user's invocation (highest priority)
+2. The active Claude Project name (if running inside a specific Project)
+3. The built-in Site Profiles in this skill (or an optional `site-registry.md` if present in the workspace)
 
-- If the Project maps to a registry entry with `status: active`: load that entry. Continue.
-- If the Project maps to an entry with `status: out_of_scope`: stop and show the
-  `out_of_scope_reason` from the registry. Do not proceed.
-- If the Project name maps to no entry: ask the user once which site this job is for.
-  Do not guess. A wrong site produces fully-polished content in the wrong voice.
+Resolution rules:
+- If a matching profile exists: load that configuration.
+- If no specific site profile is matched: apply the built-in `_default` universal profile for the specified domain/brand. If no domain was provided, proceed using `_default`.
+- If an entry has `status: out_of_scope`: stop and report the `out_of_scope_reason`.
 
-### Stop 3: Confirm voice document is readable
+### Stop 3: Confirm voice and style guidelines
 
-The registry entry's `voice_doc_path` must be non-null and the document must be readable
-(open it and confirm you can read its text).
+Resolve voice guidelines from:
+1. The `Voice / Tone:` parameter provided in the user's invocation (highest priority)
+2. The resolved site profile's `voice_doc_path` (if a file/link is provided and accessible)
+3. The site profile's `voice_guidelines` or `voice_skill`
+4. Standard editorial guidelines: Clear, direct, authoritative, reader-centric, active voice, devoid of AI clichés and filler.
 
-- If `voice_doc_path` is null, "PENDING", or unreadable: stop.
-  > "The voice document for [SITE] is missing or unreadable. The pipeline requires it to
-  > populate style_requirements and voice_requirements in the writing brief. Please:
-  > (a) Add the document path to site-registry.md and confirm it's accessible, or
-  > (b) Explicitly sign off on proceeding with voice_requirements left empty (this will
-  > be flagged in the delivery summary and will likely cause the eeat-audit gate to fail)."
-
-Never invent a voice to fill the gap.
+- If an explicit `voice_doc_path` was specified in the profile but cannot be read, inform the user and proceed with inline guidelines.
+- Never invent fabricated credentials or inconsistent persona details.
 
 ### Stop 4: Confirm a usable drafting model exists
 
@@ -78,7 +81,7 @@ Never invent a voice to fill the gap.
 
 ## PHASE 1 -- Intake
 
-Capture from the user's invocation and the registry (do not ask for what's already known):
+Capture from the user's invocation and the resolved profile:
 
 ```json
 {
@@ -118,9 +121,7 @@ Write initial job state to `data/jobs/{job_id}.json`:
 }
 ```
 
-Select the content-type profile from the registry entry's `content_profiles` for this
-`content_type`. If no profile exists for the requested content type, tell the user --
-do not invent a profile. Update job status to `SKILLS_SELECTED`.
+Select the content profile from the site entry's `content_profiles` for this `content_type` (falling back to `_default.content_profiles`). Update job status to `SKILLS_SELECTED`.
 
 ---
 
@@ -130,16 +131,12 @@ Update job status to `PRE_RESEARCH_RUNNING`.
 
 ### 2a. Determine which pre-writing skill builds the brief
 
-From the registry entry's `pre_writing_skill`:
+From the site profile's `pre_writing_skill`:
 
-- **`semantic-seo-content`**: entity-attribute-value precision, semantic triples, evidence-
-  calibrated writing. Used for faceshapetool.com SEO articles. This skill calls `content-brief`
-  internally for DataForSEO + Firecrawl research -- do not run DataForSEO/Firecrawl separately.
-- **`content-brief`**: for other content types, or when the lighter skill fits better.
-  This skill runs DataForSEO (`mcp__dfseo__*`) and Firecrawl (`mcp__firecrawl__*`) internally.
+- **`semantic-seo-content`**: entity-attribute-value precision, semantic triples, evidence-calibrated writing. Ideal for technical, competitive, or entity-rich SEO articles. This skill calls `content-brief` internally for DataForSEO + Firecrawl research -- do not run DataForSEO/Firecrawl separately.
+- **`content-brief`**: standard research brief for general articles, service pages, and blog posts. Runs DataForSEO (`mcp__dfseo__*`) and Firecrawl (`mcp__firecrawl__*`) internally.
 
-Run the selected skill. Do not duplicate the research by also running DataForSEO/Firecrawl
-manually as separate stages -- that duplication was resolved.
+Run the selected skill without duplicating manual research stages.
 
 After DataForSEO research completes: update status to `DATAFORSEO_COMPLETE`.
 After Firecrawl research completes: update status to `FIRECRAWL_COMPLETE`.
@@ -147,12 +144,11 @@ After synthesis/normalization: update status to `RESEARCH_SYNTHESIZED`.
 
 ### 2b. Run additional pre-writing skills per content-type profile
 
-Run each skill listed in the content-type profile's `pre_writing_skills` (after the primary
-brief-building skill).
+Run any skills listed in the content-type profile's `pre_writing_skills` (after the primary brief-building skill).
 
 ### 2c. Assemble the MASTER_WRITING_BRIEF
 
-Synthesize all research into a single structured object per Section 11 of the pipeline spec:
+Synthesize all research into a single structured object:
 
 ```json
 {
@@ -182,16 +178,13 @@ Synthesize all research into a single structured object per Section 11 of the pi
   "editorial_direction": "...",
   "quality_bar": "...",
   "persona_experience_details": [],
-  "no_live_expert_interview": true
+  "no_live_expert_interview": false
 }
 ```
 
-For `persona_experience_details`: if `no_live_expert_interview: true`, decide the specific
-concrete experience detail (a product, a date, a concrete failure or success) at this point --
-after the fact, no rewrite can manufacture genuine first-hand specificity. If
-`no_live_expert_interview: false`, leave this array empty.
+For `persona_experience_details`: if the profile has `no_live_expert_interview: true`, decide the specific concrete experience detail (e.g. testing context, workflow detail) at brief time. If `no_live_expert_interview: false`, leave this array empty.
 
-`style_requirements` and `voice_requirements` are populated in Phase 3, not here.
+`style_requirements` and `voice_requirements` are populated in Phase 3.
 
 Update job status to `BRIEF_COMPLETE`.
 
@@ -203,7 +196,7 @@ Invoke `openrouter-draft-audit` STEP 1.
 
 That step:
 - Reads the relevant checklist skill excerpts verbatim (from `pre_writing_checklist_skills`)
-- Reads the voice document via `voice_skill` (falls back to `voice_doc_path` if null)
+- Reads the voice guidelines (from invocation or resolved site profile)
 - Populates `style_requirements` and `voice_requirements` in the brief
 - Assembles the full `system_prompt` + `prompt` for the drafting call
 
@@ -249,7 +242,7 @@ When the draft passes the grading gate:
 Save the final (graded) draft to `data/drafts/` -- `writer_generate` does this automatically
 via `export_file: true`. Confirm the file exists. Update status to `PROOFREADING`.
 
-### 5b. Run finalization checklist (Section 18 gate)
+### 5b. Run finalization checklist
 
 Update status to `FINALIZING`. Confirm every item below against the actual draft:
 
@@ -258,7 +251,7 @@ Update status to `FINALIZING`. Confirm every item below against the actual draft
 [ ] Search intent satisfied
 [ ] Required sections present
 [ ] Required entities/topics addressed
-[ ] Required style followed (check against voice doc)
+[ ] Required style followed (check against voice guidelines)
 [ ] Required sources/claims handled
 [ ] SEO requirements satisfied
 [ ] Audit issues resolved (all issues from audit_findings are fixed)
@@ -270,10 +263,7 @@ Update status to `FINALIZING`. Confirm every item below against the actual draft
 Update status to `VALIDATING`.
 
 If any item fails: update `validation.issues` in the job log with the specific failure.
-Do not mark `COMPLETED` until all 11 items pass.
-
-If a failure cannot be fixed automatically (e.g. required entity was never in the brief):
-stop, surface it to the user, and update status to `DEGRADED`.
+Do not mark `COMPLETED` until all items pass.
 
 Update `validation` in the job log:
 ```json
@@ -293,7 +283,7 @@ Output ONLY the final drafted content as clean Markdown. No:
 
 ### 5d. Write the final job log
 
-Update `data/jobs/{job_id}.json` to `COMPLETED` with the full Section 19 schema:
+Update `data/jobs/{job_id}.json` to `COMPLETED`:
 ```json
 {
   "job_id": "...",
@@ -324,23 +314,17 @@ This log is internal only -- do not output it to the user unless they ask for di
 
 ## Quick Reference: Stop Conditions
 
-Stop and do not proceed past these without explicit user input:
-
 | Condition | Stop After |
 |---|---|
 | Device bridge not connected | Phase 0, Stop 1 |
-| Site can't be resolved | Phase 0, Stop 2 |
-| Voice document missing/unreadable without sign-off | Phase 0, Stop 3 |
+| Drafting model not enabled | Phase 0, Stop 4 |
 | Site `status: out_of_scope` | Phase 0, Stop 2 |
-| No enabled drafting model | Phase 0, Stop 4 |
-| No content-type profile for requested type | Phase 1 |
-| No voice document at Phase 3 (after passing Stop 3 with sign-off) | Phase 3 |
 | Revision loop exhausted (MAX_REVISION_LOOPS = 3) | Phase 4 escalation |
 | Finalization checklist item fails (unfixable) | Phase 5b |
 
 ---
 
-## Full State Machine (Section 22)
+## Full State Machine
 
 ```
 CREATED
@@ -363,16 +347,131 @@ CREATED
   | DEGRADED
 ```
 
-Every state transition writes to `data/jobs/{job_id}.json` so failures can be diagnosed
-and, where possible, resumed from the last completed state.
-
 ---
 
-## What the User Sees
+## Site Configuration & Profiles (Self-Contained)
 
-Only:
-1. The final publish-ready Markdown content
-2. (Optional) If they ask: which model wrote it, how many revision loops, total cost
+This skill is completely self-contained. Site configuration can be supplied dynamically in the
+`/create-content` invocation, defined here, or optionally read from a local workspace `site-registry.md`.
 
-Never output: tool names, MCP calls, audit findings, token counts, file paths -- unless
-the user explicitly asks for technical diagnostics.
+### Built-in Archetypes & Profiles
+
+```json
+{
+  "_default": {
+    "site": "Default / Universal",
+    "status": "active",
+    "voice_guidelines": "Conversational yet authoritative, clear, engaging, concise. Avoid corporate jargon, buzzwords, and AI filler phrases.",
+    "persona": null,
+    "no_live_expert_interview": false,
+    "pre_writing_skill": "content-brief",
+    "hard_rules": [
+      "Never publish fabricated statistics without a cited source",
+      "No AI detection artifacts: zero-width Unicode, curly quotes, repetitive transitions",
+      "Active voice with natural sentence rhythm",
+      "No filler intros or generic summary conclusions"
+    ],
+    "content_profiles": {
+      "seo_article": {
+        "voice_skill": "anthropic-skills:blog-writer",
+        "pre_writing_skills": [
+          "anthropic-skills:keyword-deep-dive",
+          "anthropic-skills:topic-cluster-planning",
+          "semantic-seo-content"
+        ],
+        "pre_writing_checklist_skills": [
+          "anthropic-skills:google-helpful-content-grader",
+          "anthropic-skills:semantic-gap-analysis",
+          "anthropic-skills:no-ai-slop",
+          "anthropic-skills:heading-microcopy-writer"
+        ],
+        "post_writing_skills": [
+          "anthropic-skills:eeat-audit",
+          "anthropic-skills:avoid-ai-detection"
+        ]
+      },
+      "blog_post": {
+        "voice_skill": "anthropic-skills:blog-writer",
+        "pre_writing_skills": [
+          "anthropic-skills:content-brief"
+        ],
+        "pre_writing_checklist_skills": [
+          "anthropic-skills:google-helpful-content-grader",
+          "anthropic-skills:no-ai-slop"
+        ],
+        "post_writing_skills": [
+          "anthropic-skills:eeat-audit",
+          "anthropic-skills:avoid-ai-detection"
+        ]
+      }
+    }
+  },
+  "b2b_expert": {
+    "site": "B2B / SaaS / Professional Services",
+    "status": "active",
+    "voice_guidelines": "Expert, professional, outcome-focused, qualified claims ('typically', 'in most environments'). High domain accuracy.",
+    "persona": null,
+    "no_live_expert_interview": false,
+    "pre_writing_skill": "content-brief",
+    "hard_rules": [
+      "Never make unqualified absolute legal or technical claims",
+      "All facts and metrics must trace to a verifiable industry source",
+      "Focus on ROI, operational efficiency, and practitioner value"
+    ],
+    "content_profiles": {
+      "service_page": {
+        "voice_skill": "anthropic-skills:content-brief",
+        "pre_writing_skills": [
+          "anthropic-skills:keyword-deep-dive",
+          "anthropic-skills:content-brief"
+        ],
+        "pre_writing_checklist_skills": [
+          "anthropic-skills:google-helpful-content-grader",
+          "anthropic-skills:no-ai-slop"
+        ],
+        "post_writing_skills": [
+          "anthropic-skills:eeat-audit",
+          "anthropic-skills:avoid-ai-detection"
+        ]
+      }
+    }
+  },
+  "product_review": {
+    "site": "E-Commerce & Product Reviews",
+    "status": "active",
+    "voice_guidelines": "Hands-on, direct, objective, testing-focused. Clear pros, cons, and bottom-line verdict.",
+    "persona": "Editorial Reviewer",
+    "no_live_expert_interview": true,
+    "pre_writing_skill": "semantic-seo-content",
+    "hard_rules": [
+      "Include specific testing metrics, trade-offs, and practical comparisons",
+      "Never fabricate benchmark numbers or user testimonials",
+      "Clear recommendation based on use-case (who it is for vs who should skip)"
+    ],
+    "content_profiles": {
+      "review_article": {
+        "voice_skill": "anthropic-skills:blog-writer",
+        "pre_writing_skills": [
+          "anthropic-skills:keyword-deep-dive",
+          "semantic-seo-content"
+        ],
+        "pre_writing_checklist_skills": [
+          "anthropic-skills:google-helpful-content-grader",
+          "anthropic-skills:no-ai-slop",
+          "anthropic-skills:heading-microcopy-writer"
+        ],
+        "post_writing_skills": [
+          "anthropic-skills:eeat-audit",
+          "anthropic-skills:avoid-ai-detection"
+        ]
+      }
+    }
+  }
+}
+```
+
+### Adding Any New Site
+To add custom rules for a specific client or site, you can either:
+1. Pass `Site / Domain:` and `Voice / Tone:` directly into `/create-content`.
+2. Add a new site key to the JSON block above.
+3. Or optionally place a `site-registry.md` in your project root if you prefer external file storage.

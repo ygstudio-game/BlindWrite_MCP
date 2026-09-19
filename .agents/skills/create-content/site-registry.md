@@ -1,50 +1,46 @@
-# Site Registry
+# Site Registry (Optional Workspace Reference)
 
-Maps Claude Projects to site-specific configuration for the content pipeline.
-The `create-content` skill loads this file during Phase 0 (Preflight) to resolve
-site identity, voice document location, persona rules, and content profiles.
-
-**This file must never hardcode pipeline logic.** It is data only -- the pipeline
-structure lives in `create-content/SKILL.md` and `openrouter-draft-audit/SKILL.md`.
+> **Note:** The `create-content` skill is fully self-contained and already includes built-in generic profiles. 
+> This file is strictly optional for teams that prefer maintaining site configurations in a standalone external file in their workspace.
 
 ---
 
-## How to Read This Registry
+## How to Configure Sites
 
-Each entry covers one site/client. Fields:
+Each entry maps a Claude Project or site domain to custom configuration for the content pipeline:
 
 | Field | Description |
 |---|---|
-| `project_name` | Exact Claude Desktop Project name for this site |
-| `site` | Human-readable site/client name |
+| `project_name` | Exact Claude Desktop Project name or identifier |
+| `site` | Human-readable site name or domain (e.g. `example.com`) |
 | `status` | `active` = pipeline runs; `out_of_scope` = do not run pipeline |
-| `voice_doc_path` | Path or Drive link to the tone-of-voice document. Must be readable. |
-| `persona` | Author persona name, if site uses a scripted persona (not a real person) |
-| `no_live_expert_interview` | `true` = persona-driven (decide persona_experience_details at brief time); `false` = real expert input available |
-| `pre_writing_skill` | Which skill builds the MASTER_WRITING_BRIEF |
+| `voice_doc_path` | Path or link to tone-of-voice document (optional) |
+| `voice_guidelines` | Inline tone-of-voice description if no external document |
+| `persona` | Author persona name (if persona-driven), or `null` |
+| `no_live_expert_interview` | `true` = persona-driven; `false` = real expert or objective guidance |
+| `pre_writing_skill` | Primary brief-building skill (`content-brief` or `semantic-seo-content`) |
 | `hard_rules` | Non-negotiable constraints that survive any revision loop |
-| `content_profiles` | Per content-type skill selection. Each profile's `voice_skill` tells Phase 3 which voice skill to read style from (falls back to `voice_doc_path` when null). |
+| `content_profiles` | Per content-type skill selection (`seo_article`, `blog_post`, `service_page`) |
 
 ---
 
-## Entries
+## Site Profiles & Archetypes
 
-### faceshapetool.com
+### 1. Universal / Default Blog Profile
 
 ```json
 {
-  "project_name": "FaceShapeTool",
-  "site": "faceshapetool.com",
+  "project_name": "Default",
+  "site": "example.com",
   "status": "active",
-  "voice_doc_path": "PENDING -- add the Google Drive link or local path to the faceshapetool.com tone-of-voice document here",
-  "persona": "PENDING -- add the author persona name here (e.g. Mandy Miller)",
-  "no_live_expert_interview": true,
-  "pre_writing_skill": "semantic-seo-content",
+  "voice_guidelines": "Clear, engaging, reader-centric, active voice, zero AI fluff.",
+  "persona": null,
+  "no_live_expert_interview": false,
+  "pre_writing_skill": "content-brief",
   "hard_rules": [
-    "Never publish fabricated statistics without a cited source",
-    "Persona must be internally consistent across all content -- same voice, same backstory",
-    "No AI detection artifacts: invisible Unicode, curly quotes, title-case headings",
-    "No em dashes"
+    "Never publish unverified claims or fabricated statistics without citation",
+    "No AI detection artifacts: zero-width Unicode, curly quotes in code, repetitive transitions",
+    "Active voice with natural sentence rhythm"
   ],
   "content_profiles": {
     "seo_article": {
@@ -52,8 +48,7 @@ Each entry covers one site/client. Fields:
       "pre_writing_skills": [
         "anthropic-skills:keyword-deep-dive",
         "anthropic-skills:topic-cluster-planning",
-        "semantic-seo-content",
-        "anthropic-skills:cite-me"
+        "semantic-seo-content"
       ],
       "pre_writing_checklist_skills": [
         "anthropic-skills:google-helpful-content-grader",
@@ -65,41 +60,11 @@ Each entry covers one site/client. Fields:
         "anthropic-skills:eeat-audit",
         "anthropic-skills:avoid-ai-detection"
       ]
-    }
-  }
-}
-```
-
-> **ACTION REQUIRED**: Replace both `PENDING` values above before running the first job for this site.
-> `voice_doc_path`: add the Google Drive link or local file path to the tone-of-voice document.
-> `persona`: add the exact author persona name used consistently across all faceshapetool.com content.
-
----
-
-### Juriszone
-
-```json
-{
-  "project_name": "Juriszone",
-  "site": "Juriszone",
-  "status": "active",
-  "voice_doc_path": "PENDING -- add the Google Drive link or local path to the Juriszone tone-of-voice document here",
-  "persona": null,
-  "no_live_expert_interview": false,
-  "pre_writing_skill": "content-brief",
-  "hard_rules": [
-    "Never fabricate legal citations or case law references",
-    "Never make definitive legal claims without qualification (use 'generally', 'typically', 'in most jurisdictions')",
-    "All legal facts must be traceable to a real source",
-    "No AI detection artifacts: invisible Unicode, curly quotes"
-  ],
-  "content_profiles": {
-    "legal_service_page": {
-      "voice_skill": "anthropic-skills:juriszone-content-writer",
+    },
+    "blog_post": {
+      "voice_skill": "anthropic-skills:blog-writer",
       "pre_writing_skills": [
-        "anthropic-skills:keyword-deep-dive",
-        "anthropic-skills:content-brief",
-        "semantic-seo-content"
+        "anthropic-skills:content-brief"
       ],
       "pre_writing_checklist_skills": [
         "anthropic-skills:google-helpful-content-grader",
@@ -114,35 +79,78 @@ Each entry covers one site/client. Fields:
 }
 ```
 
-> **ACTION REQUIRED**: Replace the `voice_doc_path` PENDING value with the actual Juriszone voice document path before the first Juriszone job.
-
 ---
 
-### Sigma CapSeal
+### 2. Corporate & B2B Services Profile
 
 ```json
 {
-  "project_name": "SigmaCapSeal",
-  "site": "Sigma CapSeal",
-  "status": "out_of_scope",
-  "voice_doc_path": null,
+  "project_name": "CorporateB2B",
+  "site": "company.com",
+  "status": "active",
+  "voice_guidelines": "Authoritative, professional, solutions-focused, qualified claims.",
   "persona": null,
-  "no_live_expert_interview": null,
-  "pre_writing_skill": null,
-  "hard_rules": [],
-  "content_profiles": {},
-  "out_of_scope_reason": "No tone-of-voice document exists for this client. Do not run any content through this pipeline for Sigma CapSeal until: (1) a voice document is supplied, (2) this registry entry is updated with that document path, (3) status is changed to 'active'."
+  "no_live_expert_interview": false,
+  "pre_writing_skill": "content-brief",
+  "hard_rules": [
+    "Never make unqualified absolute legal or technical claims",
+    "All facts and statistics must be traceable to a credible source",
+    "Focus on ROI, operational efficiency, and practitioner value"
+  ],
+  "content_profiles": {
+    "service_page": {
+      "voice_skill": "anthropic-skills:content-brief",
+      "pre_writing_skills": [
+        "anthropic-skills:keyword-deep-dive",
+        "anthropic-skills:content-brief"
+      ],
+      "pre_writing_checklist_skills": [
+        "anthropic-skills:google-helpful-content-grader",
+        "anthropic-skills:no-ai-slop"
+      ],
+      "post_writing_skills": [
+        "anthropic-skills:eeat-audit",
+        "anthropic-skills:avoid-ai-detection"
+      ]
+    }
+  }
 }
 ```
 
 ---
 
-## Adding a New Site
+### 3. Review & Affiliate Profile
 
-1. Duplicate an existing entry block.
-2. Fill in ALL fields -- do not leave `voice_doc_path` as PENDING before running a job.
-3. Set `status: active` only after the voice document is confirmed readable.
-4. Add at least one `content_profiles` entry with a `voice_skill` field.
-5. Commit this file.
-
-The pipeline will refuse to run for any site with `status: out_of_scope` or a `voice_doc_path` that is null or unreadable.
+```json
+{
+  "project_name": "ProductReviews",
+  "site": "reviews.com",
+  "status": "active",
+  "voice_guidelines": "Hands-on, direct, objective, testing-focused.",
+  "persona": "Editorial Reviewer",
+  "no_live_expert_interview": true,
+  "pre_writing_skill": "semantic-seo-content",
+  "hard_rules": [
+    "Include specific testing metrics, trade-offs, and practical comparisons",
+    "Never fabricate benchmark numbers or user testimonials"
+  ],
+  "content_profiles": {
+    "review_article": {
+      "voice_skill": "anthropic-skills:blog-writer",
+      "pre_writing_skills": [
+        "anthropic-skills:keyword-deep-dive",
+        "semantic-seo-content"
+      ],
+      "pre_writing_checklist_skills": [
+        "anthropic-skills:google-helpful-content-grader",
+        "anthropic-skills:no-ai-slop",
+        "anthropic-skills:heading-microcopy-writer"
+      ],
+      "post_writing_skills": [
+        "anthropic-skills:eeat-audit",
+        "anthropic-skills:avoid-ai-detection"
+      ]
+    }
+  }
+}
+```

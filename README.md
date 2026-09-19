@@ -349,20 +349,20 @@ flowchart TD
 
 ### 7.1 How to Run (Single Invocation)
 
-In Claude Desktop, simply invoke `/create-content`:
+In Claude Desktop or Claude Code, simply invoke `/create-content`:
 
 ```text
 /create-content
 
-Site: faceshapetool.com
-Keyword: best hairstyles for oblong face shape
-Topic: Complete Haircut Guide for Oblong Faces (Men & Women)
+Site: example.com
+Keyword: productivity tools for remote teams
+Topic: Complete Guide to Remote Team Productivity
 Content type: seo_article
 Target length: 1500-2000 words
-Special requirements: Include comparison table of flattering vs unflattering styles
+Special requirements: Include comparison table of key features and workflows
 ```
 
-*(Note: If your active Claude Project name matches the site in `site-registry.md`, you can omit the `Site:` line—it is detected automatically).*
+*(Note: If your active Claude Project name matches the site, or if you omit `Site:`, the universal default profile is applied automatically).*
 
 ---
 
@@ -370,7 +370,7 @@ Special requirements: Include comparison table of flattering vs unflattering sty
 
 | Phase | Responsibility | What Happens Autonomously |
 | :--- | :--- | :--- |
-| **Phase 0: Preflight** | 4 Hard Stops | 1. Confirms BlindWrite MCP is online via `benchmark_list_models`.<br/>2. Resolves site against `site-registry.md` (`status: active`).<br/>3. Verifies voice document is readable (never invents a voice).<br/>4. Verifies an active drafting model exists (`deepseek-v4-1-flash` or `glm-5-3`). |
+| **Phase 0: Preflight** | 4 Hard Stops | 1. Confirms BlindWrite MCP is online via `benchmark_list_models`.<br/>2. Resolves site against built-in profiles (`status: active`).<br/>3. Verifies voice/tone guidelines (never invents a voice).<br/>4. Verifies an active drafting model exists (`deepseek-v4-1-flash` or `glm-5-3`). |
 | **Phase 1: Intake** | Task Framing | Assigns a unique `job_id` (`JOB-YYYYMMDD-XXXX`), extracts target audience, business goal, and sets content type profile & author persona. |
 | **Phase 2: Pre-Writing Research** | Live Data Grounding | `content-brief` or `semantic-seo-content` conducts live DataForSEO (`mcp__dfseo__*`) and Firecrawl (`mcp__firecrawl__*`) research—pulling real SERP rankings, search intent, competitor outlines, and entities into a structured `MASTER_WRITING_BRIEF`. |
 | **Phase 3: Checklist & Voice Layer** | Prompt Compilation | Copies **verbatim** rules from `google-helpful-content-grader`, `no-ai-slop`, `avoid-ai-detection`, and the site's voice document directly into the prompt architecture. Never summarizes or paraphrases guidelines. |
@@ -379,17 +379,17 @@ Special requirements: Include comparison table of flattering vs unflattering sty
 
 ---
 
-### 7.3 Site Registry Configuration (`site-registry.md`)
+### 7.3 Site Configuration & Profiles
 
-All site-specific configuration is decoupled from code and lives in [`.agents/skills/create-content/site-registry.md`](.agents/skills/create-content/site-registry.md):
+The `create-content` skill is 100% self-contained and works for **any website or niche** out of the box with built-in default and customizable profiles:
 
 ```yaml
-site: faceshapetool.com
+site: example.com
 status: active # active | out_of_scope | blocked
-voice_doc_path: "d:/path/to/voice-guidelines.md"
-persona: "Licensed Cosmetologist & Face Shape Consultant"
+voice_doc_path: "d:/path/to/voice-guidelines.md" # or inline voice guidelines
+persona: "Senior Tech Journalist & Product Specialist"
 hard_rules:
-  - "Never recommend high pompadours or vertical volume for oblong faces."
+  - "Cite verifiable benchmark and workflow data."
   - "No artificial hype or marketing fluff."
 content_profiles:
   seo_article:
