@@ -110,4 +110,110 @@ describe('OpenRouter Gateway & Cost Tracking', () => {
 
     global.fetch = originalFetch;
   });
+
+  it('includes reasoning effort low by default in fetch body', async () => {
+    const originalFetch = global.fetch;
+    let capturedBody: any;
+    const mockFetch = vi.fn().mockImplementation((url, options) => {
+      capturedBody = JSON.parse(options.body);
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({
+          choices: [{ message: { content: 'Generated text' } }],
+          usage: { prompt_tokens: 10, completion_tokens: 20, total_tokens: 30 },
+        }),
+      });
+    });
+    global.fetch = mockFetch as unknown as typeof fetch;
+
+    const service = new OpenRouterService('mock-api-key');
+    await service.generateOutput(
+      {
+        id: 'glm-5-3',
+        openrouter_model_id: 'z-ai/glm-5.3',
+        display_name: 'GLM 5.3',
+        provider: 'Z-AI',
+        enabled: 1,
+        prompt_price_per_m: 0.936,
+        completion_price_per_m: 3.168,
+        created_at: '',
+      },
+      'Test prompt'
+    );
+
+    expect(capturedBody.reasoning).toEqual({ effort: 'low' });
+    global.fetch = originalFetch;
+  });
+
+  it('prevents effort none for z-ai/glm-5.3 and adjusts to low', async () => {
+    const originalFetch = global.fetch;
+    let capturedBody: any;
+    const mockFetch = vi.fn().mockImplementation((url, options) => {
+      capturedBody = JSON.parse(options.body);
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({
+          choices: [{ message: { content: 'Generated text' } }],
+          usage: { prompt_tokens: 10, completion_tokens: 20, total_tokens: 30 },
+        }),
+      });
+    });
+    global.fetch = mockFetch as unknown as typeof fetch;
+
+    const service = new OpenRouterService('mock-api-key');
+    await service.generateOutput(
+      {
+        id: 'glm-5-3',
+        openrouter_model_id: 'z-ai/glm-5.3',
+        display_name: 'GLM 5.3',
+        provider: 'Z-AI',
+        enabled: 1,
+        prompt_price_per_m: 0.936,
+        completion_price_per_m: 3.168,
+        created_at: '',
+      },
+      'Test prompt',
+      { reasoningEffort: 'none' }
+    );
+
+    expect(capturedBody.reasoning).toEqual({ effort: 'low' });
+    global.fetch = originalFetch;
+  });
+
+  it('throws BlindWriteError when model exhausts tokens during reasoning (finish_reason length and null content)', async () => {
+    const originalFetch = global.fetch;
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        choices: [
+          {
+            finish_reason: 'length',
+            message: { content: null, reasoning: 'I am still thinking...' },
+          },
+        ],
+        usage: { prompt_tokens: 20, completion_tokens: 4000, total_tokens: 4020 },
+      }),
+    });
+    global.fetch = mockFetch as unknown as typeof fetch;
+
+    const service = new OpenRouterService('mock-api-key');
+    await expect(
+      service.generateOutput(
+        {
+          id: 'glm-5-3',
+          openrouter_model_id: 'z-ai/glm-5.3',
+          display_name: 'GLM 5.3',
+          provider: 'Z-AI',
+          enabled: 1,
+          prompt_price_per_m: 0.936,
+          completion_price_per_m: 3.168,
+          created_at: '',
+        },
+        'Test prompt',
+        { maxTokens: 4000 }
+      )
+    ).rejects.toThrow(/exhausted its token limit/);
+
+    global.fetch = originalFetch;
+  });
 });

@@ -17,6 +17,7 @@ export function registerWriterGenerate(server: McpServer, service: BenchmarkServ
         exportFile: args.export_file,
         temperature: args.temperature,
         maxTokens: args.max_tokens,
+        reasoningEffort: args.reasoning_effort,
       });
 
       return {

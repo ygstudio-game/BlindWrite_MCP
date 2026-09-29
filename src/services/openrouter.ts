@@ -39,10 +39,11 @@ export class OpenRouterService {
     options: GenerationOptions = {}
   ): Promise<GenerationResult> {
     const timeoutMs =
-      options.timeoutMs ?? Math.max(180_000, (options.maxTokens ?? 2000) * 60);
+      options.timeoutMs ?? Math.min(600_000, Math.max(180_000, (options.maxTokens ?? 16384) * 60));
 
     const startTime = Date.now();
     let lastError: BlindWriteError | null = null;
+    let currentMaxTokens = options.maxTokens;
 
     for (let attempt = 0; attempt <= API_MAX_RETRIES; attempt++) {
       if (attempt > 0) {
@@ -57,6 +58,29 @@ export class OpenRouterService {
 
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+      // Determine reasoning configuration for OpenRouter models.
+      // GLM 5.3 and DeepSeek Flash are reasoning models. Without constraints,
+      // OpenRouter counts reasoning tokens against max_tokens, which can exhaust
+      // the entire budget on internal thinking without generating content.
+      // Default to effort: 'low' to allow quick drafting without token exhaustion.
+      let reasoningConfig: { effort?: string; max_tokens?: number; exclude?: boolean } | undefined;
+      if (options.reasoning) {
+        reasoningConfig = { ...options.reasoning };
+      } else if (options.reasoningEffort) {
+        reasoningConfig = { effort: options.reasoningEffort };
+      } else {
+        reasoningConfig = { effort: 'low' };
+      }
+
+      // Special safeguard: z-ai/glm-5.3 returns HTTP 400 if effort is 'none'.
+      // If 'none' is specified for GLM 5.3, gracefully fallback to 'low'.
+      if (model.openrouter_model_id === 'z-ai/glm-5.3' && reasoningConfig.effort === 'none') {
+        logger.warn(
+          `OpenRouter: model 'z-ai/glm-5.3' requires reasoning. Adjusting effort from 'none' to 'low'.`
+        );
+        reasoningConfig.effort = 'low';
+      }
 
       try {
         const response = await fetch(this.apiUrl, {
@@ -79,7 +103,8 @@ export class OpenRouterService {
               },
             ],
             temperature: options.temperature ?? 0.7,
-            max_tokens: options.maxTokens,
+            max_tokens: currentMaxTokens,
+            ...(reasoningConfig ? { reasoning: reasoningConfig } : {}),
           }),
           signal: controller.signal,
         });
@@ -93,6 +118,24 @@ export class OpenRouterService {
             `OpenRouter API error for model ${model.openrouter_model_id} (HTTP ${response.status}): ${errorText}`,
             'OPENROUTER_ERROR'
           );
+
+          // If OpenRouter returns 402 with an affordable token limit (e.g. "can only afford 1855"),
+          // automatically adjust currentMaxTokens and retry to fit the account's credit balance.
+          if (response.status === 402) {
+            const affordMatch = errorText.match(/can only afford (\d+)/i);
+            if (affordMatch && affordMatch[1]) {
+              const affordableTokens = parseInt(affordMatch[1], 10);
+              if (affordableTokens >= 500 && (!currentMaxTokens || affordableTokens < currentMaxTokens)) {
+                logger.warn(
+                  `OpenRouter: model '${model.id}' cannot afford max_tokens=${currentMaxTokens} with current credit balance. ` +
+                  `Auto-adjusting max_tokens to ${affordableTokens} and retrying.`
+                );
+                currentMaxTokens = affordableTokens;
+                lastError = err;
+                continue;
+              }
+            }
+          }
 
           // Do NOT retry hard auth/validation failures — they won't resolve on retry.
           if (!RETRYABLE_STATUS_CODES.has(response.status)) {
@@ -108,11 +151,29 @@ export class OpenRouterService {
         }
 
         const data = (await response.json()) as {
-          choices?: Array<{ message?: { content?: string } }>;
+          choices?: Array<{
+            message?: { content?: string | null; reasoning?: string };
+            finish_reason?: string;
+          }>;
           usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
         };
 
-        const outputText = data.choices?.[0]?.message?.content?.trim() ?? '';
+        const choice = data.choices?.[0];
+        const outputText = choice?.message?.content?.trim() ?? '';
+
+        if (!outputText) {
+          if (choice?.finish_reason === 'length') {
+            throw new BlindWriteError(
+              `OpenRouter model '${model.id}' exhausted its token limit (max_tokens: ${options.maxTokens ?? 'unspecified'}) ` +
+              `during reasoning without producing visible content (finish_reason: 'length'). Try increasing max_tokens or setting lower reasoning effort.`,
+              'OPENROUTER_ERROR'
+            );
+          }
+          throw new BlindWriteError(
+            `OpenRouter model '${model.id}' returned empty content (finish_reason: '${choice?.finish_reason ?? 'unknown'}').`,
+            'OPENROUTER_ERROR'
+          );
+        }
         const promptTokens = data.usage?.prompt_tokens ?? 0;
         const completionTokens = data.usage?.completion_tokens ?? 0;
         const totalTokens = data.usage?.total_tokens ?? (promptTokens + completionTokens);

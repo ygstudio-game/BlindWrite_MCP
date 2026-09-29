@@ -680,6 +680,7 @@ export class BenchmarkService {
     exportFile?: boolean;
     temperature?: number;
     maxTokens?: number;
+    reasoningEffort?: 'high' | 'medium' | 'low' | 'minimal' | 'none';
     userId?: string;
   }): Promise<{
     text: string;
@@ -791,7 +792,8 @@ export class BenchmarkService {
       {
         systemPrompt: params.systemPrompt,
         temperature: params.temperature ?? 0.7,
-        maxTokens: params.maxTokens,
+        maxTokens: params.maxTokens ?? 16384,
+        reasoningEffort: params.reasoningEffort,
       }
     );
 

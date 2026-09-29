@@ -5,6 +5,12 @@ export interface GenerationOptions {
   temperature?: number;
   maxTokens?: number;
   timeoutMs?: number;
+  reasoning?: {
+    effort?: 'high' | 'medium' | 'low' | 'minimal' | 'none';
+    max_tokens?: number;
+    exclude?: boolean;
+  };
+  reasoningEffort?: 'high' | 'medium' | 'low' | 'minimal' | 'none';
 }
 
 export interface GenerationResult {

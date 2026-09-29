@@ -1,4 +1,4 @@
-﻿import { createRequire } from "module";
+import { createRequire } from "module";
 import { readFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -22,7 +22,7 @@ async function callOR(modelId, prompt, apiKey, maxTokens = 150) {
   const r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: { "Authorization": "Bearer " + apiKey, "Content-Type": "application/json", "HTTP-Referer": "https://github.com/ygstudio-game/BlindWrite_MCP", "X-Title": "BlindWrite Verify" },
-    body: JSON.stringify({ model: modelId, messages: [{ role: "user", content: prompt }], max_tokens: maxTokens, temperature: 0.7 })
+    body: JSON.stringify({ model: modelId, messages: [{ role: "user", content: prompt }], max_tokens: maxTokens, temperature: 0.7, reasoning: { effort: "low" } })
   });
   const latencyMs = Date.now() - start;
   let data; try { data = await r.json(); } catch { data = null; }

@@ -71,7 +71,8 @@ export const WriterGenerateSchema = z.object({
   include_critique: z.boolean().optional().default(false).describe('If true, instructs the model to include a 3-bullet self-critique and alternative angles directly in the output, saving Claude tokens'),
   export_file: z.boolean().optional().default(true).describe('Save a local copy of this draft to data/drafts/*.md (default true)'),
   temperature: z.number().min(0).max(2).optional().default(0.7).describe('Sampling temperature'),
-  max_tokens: z.number().optional().describe('Optional maximum output tokens'),
+  max_tokens: z.number().optional().default(16384).describe('Optional maximum output tokens (default: 16384, ~12,000 words, over 4x the previous 4000 limit)'),
+  reasoning_effort: z.enum(['high', 'medium', 'low', 'minimal', 'none']).optional().default('low').describe('Reasoning effort for OpenRouter models. Defaults to "low" to prevent reasoning models from exhausting the max_tokens budget on internal thinking without generating content.'),
 });
 
 
