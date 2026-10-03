@@ -188,7 +188,7 @@ Proceed to Phase 5 of `create-content` (deliver). The graded draft (the version 
 3. **Three explicit choices** -- do not pick for the user:
    - (a) Ship the current draft with the remaining issues noted explicitly in the delivery
    - (b) Have Claude fix the remaining issues directly as a one-time named exception (Claude writes copy this once)
-   - (c) Retry the entire draft with the other model -- if currently on DeepSeek Flash, switch to GLM 5.3 (costs approx. 5x more per output token); if on GLM 5.3, there is no higher-tier model available
+   - (c) Re-run drafting from scratch with a modified prompt or angle using GLM 5.3
 
 ---
 

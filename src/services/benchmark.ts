@@ -724,13 +724,11 @@ export class BenchmarkService {
         }
       }
 
-      // 3. Fallback to default writing model: GLM 5.3 (Priority), or DeepSeek Flash
+      // 3. Fallback to default writing model: GLM 5.3
       if (!targetModelId) {
         const defaultModel =
           this.modelRepo.getModelById('glm-5-3') ||
-          this.modelRepo.listModels(true).find((m) => m.openrouter_model_id === 'z-ai/glm-5.3') ||
-          this.modelRepo.getModelById('deepseek-v4-1-flash') ||
-          this.modelRepo.listModels(true).find((m) => m.openrouter_model_id === 'deepseek/deepseek-v4.1-flash');
+          this.modelRepo.listModels(true).find((m) => m.openrouter_model_id === 'z-ai/glm-5.3');
         if (defaultModel && defaultModel.enabled) {
           targetModelId = defaultModel.id;
           selectionReason = `Default priority writing model (${defaultModel.display_name})`;
@@ -755,24 +753,21 @@ export class BenchmarkService {
     }
 
     if (!modelRecord) {
-      // If DeepSeek Flash or V3 is available by openrouter_model_id
       modelRecord =
-        this.modelRepo.getModelById('deepseek-v4-1-flash') ||
-        this.modelRepo.getModelById('deepseek-v3') ||
+        this.modelRepo.getModelById('glm-5-3') ||
         this.modelRepo.listModels(true)[0];
 
       if (!modelRecord) {
-        // Last-resort fallback: construct a synthetic model record.
-        // This path should never be reached in normal operation (DB always has the two enabled models).
-        // Pricing here is DeepSeek V4.1 Flash as of 2026-09-14 — keep in sync with migrations.ts.
+        // Last-resort fallback: construct a synthetic model record for GLM 5.3.
+        // Pricing here is GLM 5.3 as of 2026-09-14 — keep in sync with migrations.ts.
         modelRecord = {
-          id: targetModelId ?? 'deepseek-v4-1-flash',
-          openrouter_model_id: targetModelId ?? 'deepseek/deepseek-v4.1-flash',
-          display_name: targetModelId ?? 'DeepSeek V4.1 Flash',
-          provider: 'OpenRouter',
+          id: targetModelId ?? 'glm-5-3',
+          openrouter_model_id: targetModelId ?? 'z-ai/glm-5.3',
+          display_name: targetModelId ?? 'GLM 5.3',
+          provider: 'Z-AI',
           enabled: 1,
-          prompt_price_per_m: 0.15,
-          completion_price_per_m: 0.60,
+          prompt_price_per_m: 0.936,
+          completion_price_per_m: 3.168,
           created_at: new Date().toISOString(),
         };
       }

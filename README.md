@@ -22,11 +22,11 @@
  
 Writers, marketers, and knowledge workers face two major challenges when using LLMs for writing:
 1. **Token Inefficiency & Cost**: Asking Claude to generate thousands of words of draft text burns through Claude output limits and tokens rapidly.
-2. **Brand Bias in Model Selection**: When picking an AI model, brand names ("GPT-4o", "Claude 3.5 Sonnet") skew perception, even when lightweight, ultra-cheap models (e.g. DeepSeek V3 at $0.14/1M tokens) might write better copy for your specific voice.
+2. **Brand Bias in Model Selection**: When picking an AI model, brand names ("GPT-4o", "Claude 3.5 Sonnet") skew perception, even when lightweight, focused models might write better copy for your specific voice.
  
 **BlindWrite MCP** introduces the **"Think with Claude, Write with OpenRouter"** hybrid workflow:
 - **Claude for Thinking & Strategy**: Claude handles deep reasoning, structural outlines, audience angles, and critical review.
-- **OpenRouter for Heavy Writing**: Claude delegates long-form drafting directly via `writer_generate` to your top-ranked OpenRouter model (or DeepSeek V3), generating drafts in seconds while saving thousands of Claude generation tokens.
+- **OpenRouter for Heavy Writing**: Claude delegates long-form drafting directly via `writer_generate` to your top-ranked OpenRouter model (GLM 5.3), generating drafts in seconds while saving thousands of Claude generation tokens.
 - **Blind A/B Benchmarking**: When testing styles, competing frontier models generate blind drafts (`Response A` vs `Response B`) with zero brand leakage. You vote, and the Bradley-Terry MLE & Elo engine trains your personal leaderboard!
 - **Preference Analytics**: Discovers empirical writing metrics (conciseness, bulleted structure, formality) to show *why* your top models resonate with you.
 
@@ -113,13 +113,8 @@ Writers, marketers, and knowledge workers face two major challenges when using L
 - `Social Media` (Threads, LinkedIn posts, announcements)
 - `Instruction Following` (Constraint adherence, exact formatting)
 
-### Seed Models (OpenRouter)
-- **Anthropic Claude 3.5 Sonnet** (`anthropic/claude-3.5-sonnet`)
-- **OpenAI GPT-4o** (`openai/gpt-4o`)
-- **Google Gemini 1.5 Pro** (`google/gemini-pro-1.5`)
-- **DeepSeek V3** (`deepseek/deepseek-chat`)
-- **Meta Llama 3.3 70B Instruct** (`meta-llama/llama-3.3-70b-instruct`)
-- **Qwen 2.5 72B Instruct** (`qwen/qwen-2.5-72b-instruct`)
+### Seed Model (OpenRouter)
+- **GLM 5.3** (`z-ai/glm-5.3`)
 
 ---
 
@@ -370,7 +365,7 @@ Special requirements: Include comparison table of key features and workflows
 
 | Phase | Responsibility | What Happens Autonomously |
 | :--- | :--- | :--- |
-| **Phase 0: Preflight** | 4 Hard Stops | 1. Confirms BlindWrite MCP is online via `benchmark_list_models`.<br/>2. Resolves site against built-in profiles (`status: active`).<br/>3. Verifies voice/tone guidelines (never invents a voice).<br/>4. Verifies an active drafting model exists (`deepseek-v4-1-flash` or `glm-5-3`). |
+| **Phase 0: Preflight** | 4 Hard Stops | 1. Confirms BlindWrite MCP is online via `benchmark_list_models`.<br/>2. Resolves site against built-in profiles (`status: active`).<br/>3. Verifies voice/tone guidelines (never invents a voice).<br/>4. Verifies active drafting model exists (`glm-5-3`). |
 | **Phase 1: Intake** | Task Framing | Assigns a unique `job_id` (`JOB-YYYYMMDD-XXXX`), extracts target audience, business goal, and sets content type profile & author persona. |
 | **Phase 2: Pre-Writing Research** | Live Data Grounding | `content-brief` or `semantic-seo-content` conducts live DataForSEO (`mcp__dfseo__*`) and Firecrawl (`mcp__firecrawl__*`) research—pulling real SERP rankings, search intent, competitor outlines, and entities into a structured `MASTER_WRITING_BRIEF`. |
 | **Phase 3: Checklist & Voice Layer** | Prompt Compilation | Copies **verbatim** rules from `google-helpful-content-grader`, `no-ai-slop`, `avoid-ai-detection`, and the site's voice document directly into the prompt architecture. Never summarizes or paraphrases guidelines. |
@@ -400,14 +395,13 @@ content_profiles:
 
 ---
 
-### 7.4 Supported Drafting Models & Cost Breakdown
+### 7.4 Supported Drafting Model & Cost Breakdown
 
-The pipeline exclusively uses two frontier OpenRouter models configured for high-velocity drafting:
+The pipeline exclusively uses GLM 5.3 configured for high-velocity drafting:
 
 | Model Name | OpenRouter ID | Pricing (Input / Output per 1M) | Best For |
 | :--- | :--- | :--- | :--- |
-| **DeepSeek V4.1 Flash** | `deepseek/deepseek-v4.1-flash` | **$0.15 / $0.60** | **Cost Default**: 1,500–2,500 word articles for pennies (~$0.001 per run). |
-| **GLM 5.3** | `z-ai/glm-5.3` | **$0.936 / $3.168** | **High Quality**: Complex technical synthesis, nuanced argumentation, or legal analysis. |
+| **GLM 5.3** | `z-ai/glm-5.3` | **$0.936 / $3.168** | **High Quality**: Complex technical synthesis, nuanced argumentation, and high-depth drafting. |
 
 ---
 
@@ -437,7 +431,7 @@ The pipeline stops and asks for human intervention only on critical edge cases:
 1. Analyzes the VP of Sales persona (time-poor, quota-focused, values proven ROI).
 2. Formulates the prompt blueprint (Hook: shortening deal cycles by 40%; Body: 2 concrete metrics; CTA: 10-minute intro).
 3. **Delegates drafting**: Calls `writer_generate(category: "Emails", prompt: "...", max_tokens: 400)`.
-4. OpenRouter generates the draft in ~800ms using your personal #1 model (e.g. DeepSeek V3 for $0.0003).
+4. OpenRouter generates the draft in ~800ms using your personal #1 model (GLM 5.3).
 5. **Zero-Tax Direct Delivery**: Claude presents the generated email verbatim with the metrics badge (saved ~300 Claude output tokens, cost $0.0003), auto-saved to `data/drafts/`, without burning extra tokens on unprompted critique.
 
 ---

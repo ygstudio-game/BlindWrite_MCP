@@ -60,7 +60,7 @@ export class OpenRouterService {
       const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
       // Determine reasoning configuration for OpenRouter models.
-      // GLM 5.3 and DeepSeek Flash are reasoning models. Without constraints,
+      // GLM 5.3 is a reasoning model. Without constraints,
       // OpenRouter counts reasoning tokens against max_tokens, which can exhaust
       // the entire budget on internal thinking without generating content.
       // Default to effort: 'low' to allow quick drafting without token exhaustion.

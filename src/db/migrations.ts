@@ -3,7 +3,6 @@ import { logger } from '../utils/logger.js';
 
 // Pricing sourced from OpenRouter model pages on 2026-09-14.
 // GLM 5.3: https://openrouter.ai/z-ai/glm-5.3
-// DeepSeek V4.1 Flash: https://openrouter.ai/deepseek/deepseek-v4.1-flash
 // Re-verify against OpenRouter if more than 30 days have passed since above date.
 export const SEED_MODELS = [
   {
@@ -14,15 +13,6 @@ export const SEED_MODELS = [
     enabled: 1,
     prompt_price_per_m: 0.936,
     completion_price_per_m: 3.168,
-  },
-  {
-    id: 'deepseek-v4-1-flash',
-    openrouter_model_id: 'deepseek/deepseek-v4.1-flash',
-    display_name: 'DeepSeek V4.1 Flash',
-    provider: 'DeepSeek',
-    enabled: 1,
-    prompt_price_per_m: 0.15,
-    completion_price_per_m: 0.60,
   },
 ];
 
@@ -154,19 +144,19 @@ export function runMigrations(db: Database.Database): void {
   });
   tx(SEED_MODELS);
 
-  // 4. Ensure only GLM 5.3 and DeepSeek Flash exist and are enabled.
+  // 4. Ensure only GLM 5.3 exists and is enabled.
   // Try to delete legacy models; fall back to disabling them if FK constraints prevent deletion.
   try {
     db.prepare(`
-      DELETE FROM models WHERE id NOT IN ('glm-5-3', 'deepseek-v4-1-flash')
+      DELETE FROM models WHERE id NOT IN ('glm-5-3')
     `).run();
   } catch {
     db.prepare(`
-      UPDATE models SET enabled = 0 WHERE id NOT IN ('glm-5-3', 'deepseek-v4-1-flash')
+      UPDATE models SET enabled = 0 WHERE id NOT IN ('glm-5-3')
     `).run();
   }
   db.prepare(`
-    UPDATE models SET enabled = 1 WHERE id IN ('glm-5-3', 'deepseek-v4-1-flash')
+    UPDATE models SET enabled = 1 WHERE id IN ('glm-5-3')
   `).run();
 
   // 5. Fix pricing on already-seeded rows (INSERT OR IGNORE won't update existing rows).
@@ -176,12 +166,6 @@ export function runMigrations(db: Database.Database): void {
     SET prompt_price_per_m = 0.936, completion_price_per_m = 3.168
     WHERE id = 'glm-5-3'
       AND (prompt_price_per_m != 0.936 OR completion_price_per_m != 3.168)
-  `).run();
-  db.prepare(`
-    UPDATE models
-    SET prompt_price_per_m = 0.15, completion_price_per_m = 0.60
-    WHERE id = 'deepseek-v4-1-flash'
-      AND (prompt_price_per_m != 0.15 OR completion_price_per_m != 0.60)
   `).run();
 
   logger.info('Database migrations and seeds successfully executed');

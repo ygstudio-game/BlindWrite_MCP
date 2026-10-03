@@ -36,7 +36,16 @@ describe('MCP Tools Integration', () => {
     expect(task.id).toBeDefined();
 
     const models = benchmarkService.listModels();
-    expect(models.length).toBeGreaterThanOrEqual(2);
+    expect(models.length).toBe(1);
+    expect(models[0].id).toBe('glm-5-3');
+
+    // Add a test challenger model for testing multi-model duels and comparisons
+    benchmarkService.modelRepo.addModel({
+      id: 'test-challenger',
+      openrouterModelId: 'test/challenger',
+      displayName: 'Test Challenger',
+      provider: 'TestProvider',
+    });
 
     const duelTask = benchmarkService.createTask({
       title: 'Duel',
@@ -56,8 +65,8 @@ describe('MCP Tools Integration', () => {
         estimatedCost: 0.0003,
       },
       {
-        modelId: 'deepseek-v4-1-flash',
-        outputText: 'Second output from DeepSeek',
+        modelId: 'test-challenger',
+        outputText: 'Second output from Challenger',
         promptTokens: 10,
         completionTokens: 25,
         totalTokens: 35,
@@ -87,7 +96,7 @@ describe('MCP Tools Integration', () => {
       const leaderboard = benchmarkService.getLeaderboard({ scope: 'personal' });
       expect(leaderboard.length).toBeGreaterThan(0);
 
-      const comparison = benchmarkService.compareModels('glm-5-3', 'deepseek-v4-1-flash');
+      const comparison = benchmarkService.compareModels('glm-5-3', 'test-challenger');
       expect(comparison.totalBattles).toBe(1);
 
       const stats = benchmarkService.getModelStats('glm-5-3');

@@ -24,12 +24,12 @@ describe('Database & Repositories', () => {
   it('runs migrations and seeds default models and user', () => {
     const modelRepo = new ModelRepository(db);
     const enabledModels = modelRepo.listModels(true);
-    expect(enabledModels.length).toBe(2);
-    expect(enabledModels.some(m => m.id === 'glm-5-3')).toBe(true);
-    expect(enabledModels.some(m => m.id === 'deepseek-v4-1-flash')).toBe(true);
+    expect(enabledModels.length).toBe(1);
+    expect(enabledModels[0].id).toBe('glm-5-3');
+    expect(enabledModels.some(m => m.id === 'deepseek-v4-1-flash')).toBe(false);
 
     const allModels = modelRepo.listModels(false);
-    expect(allModels.length).toBeGreaterThanOrEqual(2);
+    expect(allModels.length).toBe(1);
   });
 
   it('creates and retrieves a benchmark task', () => {
@@ -80,7 +80,7 @@ describe('Database & Repositories', () => {
 
     const output2 = outputRepo.createOutput({
       taskId: task.id,
-      modelId: 'deepseek-v4-1-flash',
+      modelId: 'glm-5-3',
       anonymousId: 'anon_002',
       outputText: 'Output 2 text',
       promptTokens: 10,

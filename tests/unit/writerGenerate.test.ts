@@ -21,7 +21,7 @@ describe('WriterGenerate and directWrite', () => {
 
   it('delegates writing to explicit model via OpenRouter', async () => {
     vi.spyOn(service.openRouterService, 'generateOutput').mockResolvedValue({
-      modelId: 'deepseek-v4-1-flash',
+      modelId: 'glm-5-3',
       outputText: 'Subject: Quick question regarding your sales pipeline\n\nHi Alex, noticed your recent growth...',
       promptTokens: 50,
       completionTokens: 120,
@@ -32,12 +32,12 @@ describe('WriterGenerate and directWrite', () => {
 
     const result = await service.directWrite({
       prompt: 'Write a cold email to a VP of Sales.',
-      modelId: 'deepseek/deepseek-v4.1-flash',
+      modelId: 'z-ai/glm-5.3',
       temperature: 0.7,
     });
 
     expect(result.text).toContain('Quick question');
-    expect(result.modelId).toBe('deepseek-v4-1-flash');
+    expect(result.modelId).toBe('glm-5-3');
     expect(result.latencyMs).toBe(820);
     expect(result.tokensCompletion).toBe(120);
     expect(result.estimatedCostUsd).toBeGreaterThan(0);
@@ -91,7 +91,7 @@ describe('WriterGenerate and directWrite', () => {
       scope: 'personal',
       userId: 'default_user',
       category: 'Emails',
-      modelId: 'deepseek-v4-1-flash',
+      modelId: 'glm-5-3',
       bradleyTerryScore: 125.0,
       eloRating: 1350.0,
       battlesCount: 8,
@@ -103,8 +103,8 @@ describe('WriterGenerate and directWrite', () => {
     });
 
     vi.spyOn(service.openRouterService, 'generateOutput').mockResolvedValue({
-      modelId: 'deepseek-v4-1-flash',
-      outputText: 'Top-ranked email draft from DeepSeek Flash.',
+      modelId: 'glm-5-3',
+      outputText: 'Top-ranked email draft from GLM 5.3.',
       promptTokens: 40,
       completionTokens: 150,
       totalTokens: 190,
@@ -117,7 +117,7 @@ describe('WriterGenerate and directWrite', () => {
       category: 'Emails',
     });
 
-    expect(result.modelId).toBe('deepseek-v4-1-flash');
+    expect(result.modelId).toBe('glm-5-3');
     expect(result.selectionReason).toContain('Ranked #1 on your personal leaderboard');
   });
 

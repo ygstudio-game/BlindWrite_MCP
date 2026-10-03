@@ -81,7 +81,7 @@ describe('Cryptographic Randomization & Duel Service', () => {
 
     const out2 = outputRepo.createOutput({
       taskId: task.id,
-      modelId: 'deepseek-v4-1-flash',
+      modelId: 'glm-5-3',
       anonymousId: 'anon_beta',
       outputText: 'Apology text from Model Beta.',
     });
@@ -100,8 +100,6 @@ describe('Cryptographic Randomization & Duel Service', () => {
     // Verify STRICT blindness: no model_id or provider leaks in response
     const duelJson = JSON.stringify(duel);
     expect(duelJson).not.toContain('glm-5-3');
-    expect(duelJson).not.toContain('deepseek-v4-1-flash');
     expect(duelJson).not.toContain('Z-AI');
-    expect(duelJson).not.toContain('DeepSeek');
   });
 });

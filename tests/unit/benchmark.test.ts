@@ -30,10 +30,18 @@ describe('Benchmark Orchestration Service', () => {
     expect(task.category).toBe('Emails');
 
     const models = service.listModels();
-    expect(models.length).toBeGreaterThanOrEqual(2);
+    expect(models.length).toBe(1);
+    expect(models[0].id).toBe('glm-5-3');
   });
 
   it('generates outputs in parallel and masks model identities with anonymous IDs', async () => {
+    service.modelRepo.addModel({
+      id: 'test-model-b',
+      openrouterModelId: 'test/model-b',
+      displayName: 'Test Model B',
+      provider: 'TestProvider',
+    });
+
     const task = service.createTask({
       title: 'Creative Writing',
       category: 'Creative Writing',
@@ -52,7 +60,7 @@ describe('Benchmark Orchestration Service', () => {
         estimatedCost: 0.0005,
       },
       {
-        modelId: 'deepseek-v4-1-flash',
+        modelId: 'test-model-b',
         outputText: 'Rain tapped relentlessly against the attic window.',
         promptTokens: 20,
         completionTokens: 35,
@@ -62,17 +70,24 @@ describe('Benchmark Orchestration Service', () => {
       },
     ]);
 
-    const result = await service.generateOutputs(task.id, ['glm-5-3', 'deepseek-v4-1-flash']);
+    const result = await service.generateOutputs(task.id, ['glm-5-3', 'test-model-b']);
     expect(result.outputsGenerated).toBe(2);
     expect(result.anonymousOutputIds.length).toBe(2);
 
     // Verify outputs are anonymized and stored
     const resultJson = JSON.stringify(result);
     expect(resultJson).not.toContain('glm-5-3');
-    expect(resultJson).not.toContain('deepseek-v4-1-flash');
+    expect(resultJson).not.toContain('test-model-b');
   });
 
   it('orchestrates A/B duel, records vote, updates ratings, and handles tournament reveal gating', async () => {
+    service.modelRepo.addModel({
+      id: 'test-model-b',
+      openrouterModelId: 'test/model-b',
+      displayName: 'Test Model B',
+      provider: 'TestProvider',
+    });
+
     const task = service.createTask({
       title: 'Duel Task',
       category: 'Emails',
@@ -91,7 +106,7 @@ describe('Benchmark Orchestration Service', () => {
         estimatedCost: 0.0001,
       },
       {
-        modelId: 'deepseek-v4-1-flash',
+        modelId: 'test-model-b',
         outputText: 'Response 2',
         promptTokens: 10,
         completionTokens: 10,
@@ -101,7 +116,7 @@ describe('Benchmark Orchestration Service', () => {
       },
     ]);
 
-    await service.generateOutputs(task.id, ['glm-5-3', 'deepseek-v4-1-flash']);
+    await service.generateOutputs(task.id, ['glm-5-3', 'test-model-b']);
 
     // 1. Start duel
     const duel = service.startDuel(task.id);
@@ -136,7 +151,7 @@ describe('Benchmark Orchestration Service', () => {
     expect(leaderboard.length).toBeGreaterThan(0);
 
     // 6. Compare models
-    const comparison = service.compareModels('glm-5-3', 'deepseek-v4-1-flash');
+    const comparison = service.compareModels('glm-5-3', 'test-model-b');
     expect(comparison.totalBattles).toBe(1);
 
     // 7. Get model stats

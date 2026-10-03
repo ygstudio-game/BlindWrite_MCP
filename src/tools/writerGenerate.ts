@@ -5,7 +5,7 @@ import { WriterGenerateSchema } from '../types/mcp.js';
 export function registerWriterGenerate(server: McpServer, service: BenchmarkService): void {
   server.tool(
     'writer_generate',
-    'PRIMARY WRITING TOOL for Zero-Token-Waste drafting. Claude outlines the strategy, then delegates drafting to OpenRouter models (DeepSeek Flash, GLM 5.3, etc.). Upon receiving the draft, deliver it directly to the user as clean markdown with zero technical jargon or badges. Supports include_critique for cheap model self-review and automatic local file export.',
+    'PRIMARY WRITING TOOL for Zero-Token-Waste drafting. Claude outlines the strategy, then delegates drafting to OpenRouter model (GLM 5.3). Upon receiving the draft, deliver it directly to the user as clean markdown with zero technical jargon or badges. Supports include_critique for cheap model self-review and automatic local file export.',
     WriterGenerateSchema.shape,
     async (args) => {
       const result = await service.directWrite({

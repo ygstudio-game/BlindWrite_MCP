@@ -1,6 +1,6 @@
-﻿---
+---
 name: writing-orchestrator
-description: "Orchestrates AI writing workflows using Claude as the thinking/strategy brain and OpenRouter models (GLM 5.3 and DeepSeek 4.1) as the writing execution engine via BlindWrite MCP. Use when drafting content or saving Claude output tokens. Triggers on: blog post, blog writing, write a blog, draft a blog, write an article, draft an article, cold outreach email, sales email, sales copy, executive memo, technical RFC, social thread, social post, draft content, write content, generate a draft."
+description: "Orchestrates AI writing workflows using Claude as the thinking/strategy brain and OpenRouter model (GLM 5.3) as the writing execution engine via BlindWrite MCP. Use when drafting content or saving Claude output tokens. Triggers on: blog post, blog writing, write a blog, draft a blog, write an article, draft an article, cold outreach email, sales email, sales copy, executive memo, technical RFC, social thread, social post, draft content, write content, generate a draft."
 ---
 
 # Writing Orchestrator Skill ðŸ–‹ï¸âš¡
@@ -38,16 +38,15 @@ Use this skill whenever:
 
 ---
 
-## Supported Models & Strict No-Fallback Policy
+## Supported Model & Strict No-Fallback Policy
 
-This skill strictly uses only two models via BlindWrite MCP:
-1. **GLM 5.3** (`z-ai/glm-5.3`) â€” Priority model for high-quality, deep, nuanced drafting.
-2. **DeepSeek 4.1** (`deepseek/deepseek-v4.1-flash`) â€” Cost-effective model for high speed and rapid drafting.
+This skill strictly uses one model via BlindWrite MCP:
+1. **GLM 5.3** (`z-ai/glm-5.3`) — Priority model for high-quality, deep, nuanced drafting.
 
 **Strict No Fallback Rule**:
-- Only GLM 5.3 or DeepSeek 4.1 are supported. No other models exist in this pipeline.
+- Only GLM 5.3 is supported. No other models exist in this pipeline.
 - There is **no fallback** mechanism to any other model or tier.
-- If a model call fails, times out, or is unavailable, report the failure directly and clearly. Never fall back silently or substitute an unrequested model.
+- If the model call fails, times out, or is unavailable, report the failure directly and clearly. Never fall back silently or substitute an unrequested model.
 
 ---
 
@@ -64,8 +63,8 @@ This skill strictly uses only two models via BlindWrite MCP:
                                â”‚
 â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
 â”‚ 2. DELEGATE GENERATION (OpenRouter via writer_generate)     â”‚
-â”‚ - Drafting: Call `writer_generate` (GLM 5.3 / DeepSeek 4.1) â”‚
-â”‚ - Strict No Fallback: Only GLM 5.3 or DeepSeek 4.1 used     â”‚
+â”‚ - Drafting: Call `writer_generate` (GLM 5.3) â”‚
+â”‚ - Strict No Fallback: Only GLM 5.3 used     â”‚
 â”‚ - Optional: Pass `include_critique: true` for cheap review  â”‚
 â”‚ - Auto-exports a local copy to data/drafts/                 â”‚
 â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
@@ -102,7 +101,7 @@ When the user asks: *"Help me draft a sales pitch email to engineering leaders"*
        "temperature": 0.7
      }
      ```
-   - **Model Selection & No Fallback**: Choose either `z-ai/glm-5.3` (priority quality) or `deepseek/deepseek-v4.1-flash` (speed/cost). No other models are used, and no fallback occurs if unavailable. The draft is automatically exported locally to `data/drafts/`.
+   - **Model Selection & No Fallback**: Uses `z-ai/glm-5.3` (GLM 5.3). No other models are used, and no fallback occurs if unavailable. The draft is automatically exported locally to `data/drafts/`.
 3. **Direct Delivery (Clean Output)**:
    - Present the generated draft directly and cleanly in Markdown.
    - DO NOT include `### Summary`, `Process Used:`, workflow breakdowns, step recaps, or explanations of why the post works.
@@ -115,5 +114,5 @@ When the user asks: *"Help me draft a sales pitch email to engineering leaders"*
 ## Best Practices & Rules
 
 - **Strict Stdio Hygiene**: BlindWrite MCP communicates strictly over stdio JSON-RPC. Diagnostics always go to `stderr`.
-- **Only GLM 5.3 & DeepSeek 4.1**: Never route to or mention any other model. No fallback models exist.
+- **Only GLM 5.3**: Never route to or mention any other model. No fallback models exist.
 - **Fail Explicitly**: If generation fails or the selected model is unreachable, report the error immediately to the user rather than substituting another model or falling back silently.

@@ -30,8 +30,14 @@ describe('End-to-End Tournament Simulation Workflow', () => {
     });
     expect(task.id).toBeDefined();
 
-    // 2. Select 2 competing models
-    const selectedModelIds = ['glm-5-3', 'deepseek-v4-1-flash'];
+    // 2. Add competitor model and select 2 competing models
+    service.modelRepo.addModel({
+      id: 'mock-challenger',
+      openrouterModelId: 'mock/challenger',
+      displayName: 'Mock Challenger',
+      provider: 'ChallengerAI',
+    });
+    const selectedModelIds = ['glm-5-3', 'mock-challenger'];
 
     // Mock OpenRouter parallel responses
     vi.spyOn(service.openRouterService, 'generateOutputsParallel').mockResolvedValue([
@@ -45,7 +51,7 @@ describe('End-to-End Tournament Simulation Workflow', () => {
         estimatedCost: 0.0014,
       },
       {
-        modelId: 'deepseek-v4-1-flash',
+        modelId: 'mock-challenger',
         outputText: 'The Proof Key for Code Exchange (PKCE) is defined in RFC 7636. In this flow, the client creates a cryptographic secret called code_verifier.',
         promptTokens: 45,
         completionTokens: 90,
@@ -62,7 +68,7 @@ describe('End-to-End Tournament Simulation Workflow', () => {
 
     const jsonStr = JSON.stringify(genResult);
     expect(jsonStr).not.toContain('glm-5-3');
-    expect(jsonStr).not.toContain('deepseek-v4-1-flash');
+    expect(jsonStr).not.toContain('mock-challenger');
 
     // 4. Conduct pairwise duel
     const duel1 = service.startDuel(task.id);
@@ -109,9 +115,9 @@ describe('End-to-End Tournament Simulation Workflow', () => {
     expect(personalLeaderboard[0].confidence).toBeDefined();
 
     // 8. Head-to-Head Model Comparison
-    const comparison = service.compareModels('glm-5-3', 'deepseek-v4-1-flash');
+    const comparison = service.compareModels('glm-5-3', 'mock-challenger');
     expect(comparison.modelA.displayName).toBe('GLM 5.3');
-    expect(comparison.modelB.displayName).toBe('DeepSeek V4.1 Flash');
+    expect(comparison.modelB.displayName).toBe('Mock Challenger');
 
     // 9. Detailed Model Statistics
     const glmStats = service.getModelStats('glm-5-3');

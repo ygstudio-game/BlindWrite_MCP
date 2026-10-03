@@ -34,18 +34,7 @@ console.log("=== BlindWrite MCP — Connection Verification ===");
 console.log("Key (masked): sk-or-..." + OPENROUTER_API_KEY.slice(-8));
 console.log("");
 
-console.log("TEST 1: DeepSeek V4.1 Flash");
-try {
-  const { status, latencyMs, data, ok } = await callOR("deepseek/deepseek-v4.1-flash", TEST, OPENROUTER_API_KEY);
-  if (ok) {
-    const text = data?.choices?.[0]?.message?.content?.trim() ?? "(empty)";
-    const u = data?.usage ?? {}; const cost = ((u.prompt_tokens||0)*0.15 + (u.completion_tokens||0)*0.60) / 1000000;
-    console.log("  PASS HTTP " + status + " " + latencyMs + "ms | " + (u.prompt_tokens||0) + "in/" + (u.completion_tokens||0) + "out | $" + cost.toFixed(8));
-    console.log("  Output: " + JSON.stringify(text));
-  } else { console.log("  FAIL HTTP " + status + " | " + JSON.stringify(data).substring(0,300)); }
-} catch(e) { console.log("  EXCEPTION: " + e.message); }
-
-console.log("\nTEST 2: GLM 5.3");
+console.log("TEST 1: GLM 5.3");
 try {
   const { status, latencyMs, data, ok } = await callOR("z-ai/glm-5.3", TEST, OPENROUTER_API_KEY);
   if (ok) {
@@ -56,14 +45,14 @@ try {
   } else { console.log("  FAIL HTTP " + status + " | " + JSON.stringify(data).substring(0,300)); }
 } catch(e) { console.log("  EXCEPTION: " + e.message); }
 
-console.log("\nTEST 3: Bad key failure test");
+console.log("\nTEST 2: Bad key failure test");
 try {
-  const { status, latencyMs, data, ok } = await callOR("deepseek/deepseek-v4.1-flash", TEST, "sk-or-BADKEY");
+  const { status, latencyMs, data, ok } = await callOR("z-ai/glm-5.3", TEST, "sk-or-BADKEY");
   if (!ok) { console.log("  CORRECTLY FAILED HTTP " + status + " | " + JSON.stringify(data).substring(0,300)); }
   else { console.log("  UNEXPECTED PASS HTTP " + status + " — investigate"); }
 } catch(e) { console.log("  Exception: " + e.message); }
 
-console.log("\nTEST 4: DB state");
+console.log("\nTEST 3: DB state");
 try {
   const req = createRequire(import.meta.url);
   const Database = req("better-sqlite3");
@@ -79,6 +68,6 @@ console.log("\n=== Done ===");
 console.log("Key source: .env file (OPENROUTER_API_KEY)");
 console.log("Export path: data/drafts/{category}-{timestamp}.md");
 console.log("Pricing: static in DB (update migrations.ts + run fix_pricing.js when prices change)");
-console.log("Prompt ceiling: 128k context window (DeepSeek Flash + GLM 5.3). No internal truncation.");
+console.log("Prompt ceiling: 128k context window (GLM 5.3). No internal truncation.");
 console.log("Retry policy: 2 retries on transient errors. Hard failures (401/400) fail immediately.");
 console.log("Silent fallback: NONE. Throws BlindWriteError explicitly on all failures.");

@@ -52,7 +52,7 @@ describe('Preference Analytics Service', () => {
       prompt: 'Write a cold pitch email.',
     });
 
-    // Short concise output (GLM) vs verbose output (DeepSeek)
+    // Short concise output vs verbose output
     const shortOutput = outputRepo.createOutput({
       taskId: task.id,
       modelId: 'glm-5-3',
@@ -62,7 +62,7 @@ describe('Preference Analytics Service', () => {
 
     const verboseOutput = outputRepo.createOutput({
       taskId: task.id,
-      modelId: 'deepseek-v4-1-flash',
+      modelId: 'glm-5-3',
       anonymousId: 'anon_long',
       outputText: 'This is an extremely long, wordy, flowery paragraph with excessive adjectives describing the product at great length without any clear bullet points or structure.',
     });
